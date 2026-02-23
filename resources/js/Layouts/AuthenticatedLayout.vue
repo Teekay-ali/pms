@@ -1,13 +1,27 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import { Toaster } from 'vue-sonner';
 
 const showingNavigationDropdown = ref(false);
+
+const page = usePage();
+
+watch(
+    () => page.props.flash,
+    (flash) => {
+        if (flash?.success) toast.success(flash.success)
+        if (flash?.error) toast.error(flash.error)
+        if (flash?.warning) toast.warning(flash.warning)
+        if (flash?.info) toast.info(flash.info)
+    },
+    { deep: true }
+);
 </script>
 
 <template>
@@ -194,5 +208,8 @@ const showingNavigationDropdown = ref(false);
                 <slot />
             </main>
         </div>
+
+        <Toaster position="top-right" richColors closeButton />
+
     </div>
 </template>
