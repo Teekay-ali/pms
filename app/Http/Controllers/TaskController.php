@@ -20,7 +20,9 @@ class TaskController extends Controller
             ->paginate(15);
 
         return Inertia::render('Tasks/Index', [
-            'tasks' => $tasks,
+            'tasks'    => $tasks,
+            'projects' => Project::select('id', 'name')->orderBy('name')->get(),
+            'users'    => User::select('id', 'name')->orderBy('name')->get(),
         ]);
     }
 
@@ -53,7 +55,7 @@ class TaskController extends Controller
 
         Task::create($validated);
 
-        return redirect()->back()
+        return redirect()->route('tasks.index')
             ->with('success', 'Task created successfully.');
     }
 
@@ -98,7 +100,7 @@ class TaskController extends Controller
 
         $task->update($validated);
 
-        return redirect()->back()
+        return redirect()->route('tasks.index')
             ->with('success', 'Task updated successfully.');
     }
 

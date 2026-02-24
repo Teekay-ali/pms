@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
-import { toast, Toaster } from 'vue-sonner'
+import { toast } from 'vue-sonner'
 import { useDarkMode } from '@/Composables/useDarkMode'
 import {
     HardHat,
@@ -108,7 +108,6 @@ const logout = () => {
 
 <template>
     <div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors duration-200">
-        <Toaster position="top-right" richColors closeButton />
 
         <!-- Mobile overlay -->
         <Transition
@@ -312,7 +311,7 @@ const logout = () => {
 
         <!-- Main content -->
         <div
-            class="flex-1 flex flex-col min-h-screen transition-all duration-300 min-w-0 overflow-hidden"
+            class="flex-1 flex flex-col min-h-screen transition-all duration-300 min-w-0"
             :class="sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-64'"
         >
             <!-- Top bar -->
@@ -378,5 +377,6 @@ const logout = () => {
                 <slot />
             </main>
         </div>
+
     </div>
 </template>
