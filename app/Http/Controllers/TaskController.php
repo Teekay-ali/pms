@@ -53,7 +53,7 @@ class TaskController extends Controller
 
         Task::create($validated);
 
-        return redirect()->route('tasks.index')
+        return redirect()->back()
             ->with('success', 'Task created successfully.');
     }
 
@@ -98,7 +98,7 @@ class TaskController extends Controller
 
         $task->update($validated);
 
-        return redirect()->route('tasks.show', $task)
+        return redirect()->back()
             ->with('success', 'Task updated successfully.');
     }
 

@@ -47,7 +47,7 @@ class ExpenseController extends Controller
 
         Expense::create($validated);
 
-        return redirect()->route('expenses.index')
+        return redirect()->back()
             ->with('success', 'Expense created successfully.');
     }
 
@@ -87,7 +87,7 @@ class ExpenseController extends Controller
 
         $expense->update($validated);
 
-        return redirect()->route('expenses.show', $expense)
+        return redirect()->back()
             ->with('success', 'Expense updated successfully.');
     }
 

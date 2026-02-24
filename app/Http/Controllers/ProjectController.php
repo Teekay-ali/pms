@@ -73,13 +73,21 @@ class ProjectController extends Controller
             'projectManager',
             'creator',
             'members',
-            'tasks' => fn($q) => $q->orderBy('due_date'),
-            'expenses',
+            'tasks' => fn($q) => $q->with('assignee')->orderBy('due_date'),
+            'expenses' => fn($q) => $q->with('approvedBy')->orderBy('date', 'desc'),
             'resources',
+        ]);
+
+        $project->loadCount([
+            'tasks',
+            'tasks as completed_tasks_count' => fn($q) => $q->where('status', 'completed'),
+            'tasks as in_progress_tasks_count' => fn($q) => $q->where('status', 'in_progress'),
+            'tasks as pending_tasks_count' => fn($q) => $q->where('status', 'pending'),
         ]);
 
         return Inertia::render('Projects/Show', [
             'project' => $project,
+            'users'   => \App\Models\User::select('id', 'name')->orderBy('name')->get(),
         ]);
     }
 
