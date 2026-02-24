@@ -20,13 +20,6 @@ class VendorController extends Controller
         ]);
     }
 
-    public function create(): Response
-    {
-        $this->authorize('create', Vendor::class);
-
-        return Inertia::render('Vendors/Create');
-    }
-
     public function store(Request $request)
     {
         $this->authorize('create', Vendor::class);
@@ -42,26 +35,7 @@ class VendorController extends Controller
 
         Vendor::create($validated);
 
-        return redirect()->route('vendors.index')
-            ->with('success', 'Vendor created successfully.');
-    }
-
-    public function show(Vendor $vendor): Response
-    {
-        $this->authorize('view', $vendor);
-
-        return Inertia::render('Vendors/Show', [
-            'vendor' => $vendor,
-        ]);
-    }
-
-    public function edit(Vendor $vendor): Response
-    {
-        $this->authorize('update', $vendor);
-
-        return Inertia::render('Vendors/Edit', [
-            'vendor' => $vendor,
-        ]);
+        return redirect()->back()->with('success', 'Vendor created successfully.');
     }
 
     public function update(Request $request, Vendor $vendor)
@@ -79,8 +53,7 @@ class VendorController extends Controller
 
         $vendor->update($validated);
 
-        return redirect()->route('vendors.show', $vendor)
-            ->with('success', 'Vendor updated successfully.');
+        return redirect()->back()->with('success', 'Vendor updated successfully.');
     }
 
     public function destroy(Vendor $vendor)
@@ -89,7 +62,6 @@ class VendorController extends Controller
 
         $vendor->delete();
 
-        return redirect()->route('vendors.index')
-            ->with('success', 'Vendor deleted successfully.');
+        return redirect()->back()->with('success', 'Vendor deleted.');
     }
 }

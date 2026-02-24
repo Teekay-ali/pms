@@ -18,18 +18,10 @@ class ExpenseController extends Controller
             ->latest()
             ->paginate(15);
 
-        return Inertia::render('Expenses/Index', [
-            'expenses' => $expenses,
-        ]);
-    }
-
-    public function create(): Response
-    {
-        $this->authorize('create', Expense::class);
-
         $projects = Project::select('id', 'name')->orderBy('name')->get();
 
-        return Inertia::render('Expenses/Create', [
+        return Inertia::render('Expenses/Index', [
+            'expenses' => $expenses,
             'projects' => $projects,
         ]);
     }
@@ -40,38 +32,14 @@ class ExpenseController extends Controller
 
         $validated = $request->validate([
             'project_id'  => 'required|exists:projects,id',
-            'amount'      => 'required|numeric|min:0',
+            'amount'      => 'required|numeric|min:0.01',
             'description' => 'required|string|max:500',
             'date'        => 'required|date',
         ]);
 
         Expense::create($validated);
 
-        return redirect()->back()
-            ->with('success', 'Expense created successfully.');
-    }
-
-    public function show(Expense $expense): Response
-    {
-        $this->authorize('view', $expense);
-
-        $expense->load(['project', 'approvedBy']);
-
-        return Inertia::render('Expenses/Show', [
-            'expense' => $expense,
-        ]);
-    }
-
-    public function edit(Expense $expense): Response
-    {
-        $this->authorize('update', $expense);
-
-        $projects = Project::select('id', 'name')->orderBy('name')->get();
-
-        return Inertia::render('Expenses/Edit', [
-            'expense'  => $expense,
-            'projects' => $projects,
-        ]);
+        return redirect()->back()->with('success', 'Expense created successfully.');
     }
 
     public function update(Request $request, Expense $expense)
@@ -80,15 +48,14 @@ class ExpenseController extends Controller
 
         $validated = $request->validate([
             'project_id'  => 'required|exists:projects,id',
-            'amount'      => 'required|numeric|min:0',
+            'amount'      => 'required|numeric|min:0.01',
             'description' => 'required|string|max:500',
             'date'        => 'required|date',
         ]);
 
         $expense->update($validated);
 
-        return redirect()->back()
-            ->with('success', 'Expense updated successfully.');
+        return redirect()->back()->with('success', 'Expense updated successfully.');
     }
 
     public function approve(Request $request, Expense $expense)
@@ -100,8 +67,19 @@ class ExpenseController extends Controller
             'approved_by' => $request->user()->id,
         ]);
 
-        return redirect()->back()
-            ->with('success', 'Expense approved successfully.');
+        return redirect()->back()->with('success', 'Expense approved.');
+    }
+
+    public function reject(Request $request, Expense $expense)
+    {
+        $this->authorize('approve', $expense); // same permission gate
+
+        $expense->update([
+            'status'      => 'rejected',
+            'approved_by' => $request->user()->id,
+        ]);
+
+        return redirect()->back()->with('success', 'Expense rejected.');
     }
 
     public function destroy(Expense $expense)
@@ -110,7 +88,6 @@ class ExpenseController extends Controller
 
         $expense->delete();
 
-        return redirect()->route('expenses.index')
-            ->with('success', 'Expense deleted successfully.');
+        return redirect()->back()->with('success', 'Expense deleted.');
     }
 }

@@ -18,19 +18,11 @@ class ResourceController extends Controller
             ->latest()
             ->paginate(15);
 
-        return Inertia::render('Resources/Index', [
-            'resources' => $resources,
-        ]);
-    }
-
-    public function create(): Response
-    {
-        $this->authorize('create', Resource::class);
-
         $projects = Project::select('id', 'name')->orderBy('name')->get();
 
-        return Inertia::render('Resources/Create', [
-            'projects' => $projects,
+        return Inertia::render('Resources/Index', [
+            'resources' => $resources,
+            'projects'  => $projects,
         ]);
     }
 
@@ -49,31 +41,7 @@ class ResourceController extends Controller
 
         Resource::create($validated);
 
-        return redirect()->route('resources.index')
-            ->with('success', 'Resource created successfully.');
-    }
-
-    public function show(Resource $resource): Response
-    {
-        $this->authorize('view', $resource);
-
-        $resource->load('project');
-
-        return Inertia::render('Resources/Show', [
-            'resource' => $resource,
-        ]);
-    }
-
-    public function edit(Resource $resource): Response
-    {
-        $this->authorize('update', $resource);
-
-        $projects = Project::select('id', 'name')->orderBy('name')->get();
-
-        return Inertia::render('Resources/Edit', [
-            'resource' => $resource,
-            'projects' => $projects,
-        ]);
+        return redirect()->back()->with('success', 'Resource created successfully.');
     }
 
     public function update(Request $request, Resource $resource)
@@ -91,8 +59,7 @@ class ResourceController extends Controller
 
         $resource->update($validated);
 
-        return redirect()->route('resources.show', $resource)
-            ->with('success', 'Resource updated successfully.');
+        return redirect()->back()->with('success', 'Resource updated successfully.');
     }
 
     public function destroy(Resource $resource)
@@ -101,7 +68,6 @@ class ResourceController extends Controller
 
         $resource->delete();
 
-        return redirect()->route('resources.index')
-            ->with('success', 'Resource deleted successfully.');
+        return redirect()->back()->with('success', 'Resource deleted.');
     }
 }

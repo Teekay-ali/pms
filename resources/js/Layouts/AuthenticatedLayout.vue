@@ -76,7 +76,7 @@ const navGroups = computed(() => [
     {
         label: 'Administration',
         items: [
-            { label: 'Users',    route: 'dashboard', icon: Users,    show: hasRole('admin') || hasRole('hr') },
+            { label: 'Users',    route: 'users.index', icon: Users,    show: hasRole('admin') || hasRole('hr') },
             { label: 'Settings', route: 'dashboard', icon: Settings, show: hasRole('admin') },
         ],
     },
