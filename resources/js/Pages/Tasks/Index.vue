@@ -254,7 +254,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                     class="inline-flex items-center gap-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
                                 >
                                     <FolderKanban class="w-3.5 h-3.5" />
-                                    <span class="truncate max-w-[140px]">{{ task.project.name }}</span>
+                                    <span class="truncate max-w-35">{{ task.project.name }}</span>
                                 </Link>
                                 <span v-else class="text-sm text-slate-400">—</span>
                             </td>
@@ -262,10 +262,10 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                             <!-- Assignee -->
                             <td class="px-6 py-4">
                                 <div v-if="task.assignee" class="flex items-center gap-2">
-                                    <div class="w-7 h-7 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                                    <div class="w-7 h-7 bg-linear-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center text-white text-[10px] font-bold shrink-0">
                                         {{ initials(task.assignee.name) }}
                                     </div>
-                                    <span class="text-sm text-slate-600 dark:text-slate-300 truncate max-w-[120px]">{{ task.assignee.name }}</span>
+                                    <span class="text-sm text-slate-600 dark:text-slate-300 truncate max-w-30">{{ task.assignee.name }}</span>
                                 </div>
                                 <span v-else class="text-sm text-slate-400">Unassigned</span>
                             </td>

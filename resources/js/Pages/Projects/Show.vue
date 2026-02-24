@@ -253,7 +253,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                         </div>
 
                         <!-- Actions -->
-                        <div class="flex items-center gap-2 flex-shrink-0">
+                        <div class="flex items-center gap-2 shrink-0">
                             <Link
                                 :href="route('projects.index')"
                                 class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
@@ -400,7 +400,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                         </span>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-2 flex-shrink-0">
+                                <div class="flex items-center gap-2 shrink-0">
                                     <span class="px-2 py-0.5 rounded-md text-[11px] font-medium border" :class="priorityConfig[task.priority]">
                                         {{ task.priority }}
                                     </span>
@@ -463,7 +463,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                         </span>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-2 flex-shrink-0">
+                                <div class="flex items-center gap-2 shrink-0">
                                     <span class="font-bold text-slate-800 dark:text-slate-100 text-sm">{{ formatMoney(expense.amount) }}</span>
                                     <span class="px-2 py-0.5 rounded-md text-[11px] font-medium border" :class="expenseStatusConfig[expense.status]?.badge">
                                         {{ expenseStatusConfig[expense.status]?.label }}
@@ -514,7 +514,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                 :key="member.id"
                                 class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl"
                             >
-                                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                                <div class="w-10 h-10 bg-linear-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0">
                                     {{ initials(member.name) }}
                                 </div>
                                 <div class="min-w-0">
@@ -547,14 +547,14 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                 :key="resource.id"
                                 class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl"
                             >
-                                <div class="w-9 h-9 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <div class="w-9 h-9 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg flex items-center justify-center shrink-0">
                                     <Package class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="font-medium text-slate-800 dark:text-slate-100 text-sm truncate">{{ resource.name }}</p>
                                     <p class="text-xs text-slate-400">{{ resource.type ?? '—' }}</p>
                                 </div>
-                                <div class="text-right flex-shrink-0">
+                                <div class="text-right shrink-0">
                                     <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ resource.quantity }} {{ resource.unit }}</p>
                                     <p class="text-xs text-slate-400">{{ formatMoney(resource.cost) }}</p>
                                 </div>

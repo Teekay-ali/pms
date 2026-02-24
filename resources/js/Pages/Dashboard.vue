@@ -28,48 +28,11 @@ const greeting = computed(() => {
     return 'Good evening'
 })
 
-const primaryRole = computed(() => {
-    if (!roles.value.length) return 'Team Member'
-    return roles.value[0].replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-})
-
 const stats = [
-    {
-        label: 'Active Projects',
-        value: '12',
-        change: '+2 this month',
-        trend: 'up',
-        icon: FolderKanban,
-        iconBg: 'bg-indigo-600',
-        border: 'border-indigo-100 dark:border-indigo-900/50',
-    },
-    {
-        label: 'Open Tasks',
-        value: '48',
-        change: '6 due today',
-        trend: 'neutral',
-        icon: CheckSquare,
-        iconBg: 'bg-amber-500',
-        border: 'border-amber-100 dark:border-amber-900/50',
-    },
-    {
-        label: 'Total Budget',
-        value: '$4.2M',
-        change: '78% allocated',
-        trend: 'up',
-        icon: DollarSign,
-        iconBg: 'bg-emerald-600',
-        border: 'border-emerald-100 dark:border-emerald-900/50',
-    },
-    {
-        label: 'Pending Expenses',
-        value: '17',
-        change: 'Awaiting approval',
-        trend: 'down',
-        icon: Receipt,
-        iconBg: 'bg-rose-500',
-        border: 'border-rose-100 dark:border-rose-900/50',
-    },
+    { label: 'Active Projects',  value: '12', change: '+2 this month',      trend: 'up',      icon: FolderKanban },
+    { label: 'Open Tasks',       value: '48', change: '6 due today',         trend: 'neutral', icon: CheckSquare },
+    { label: 'Total Budget',     value: '$4.2M', change: '78% allocated',   trend: 'up',      icon: DollarSign },
+    { label: 'Pending Expenses', value: '17', change: 'Awaiting approval',   trend: 'down',    icon: Receipt },
 ]
 
 const recentProjects = [
@@ -106,7 +69,7 @@ const progressColor = (p) => {
     if (p >= 75) return 'bg-emerald-500'
     if (p >= 40) return 'bg-indigo-500'
     if (p >= 15) return 'bg-amber-500'
-    return 'bg-slate-300'
+    return 'bg-slate-200 dark:bg-slate-700'
 }
 </script>
 
@@ -122,17 +85,15 @@ const progressColor = (p) => {
                     <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
                         {{ greeting }}, {{ user?.name?.split(' ')[0] }} 👋
                     </h1>
-                    <p class="text-slate-500 dark:text-slate-400 mt-0.5 text-sm">
+                    <p class="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
                         Here's what's happening across your projects today.
                     </p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <div class="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm">
-                        <CalendarDays class="w-4 h-4 text-slate-400" />
-                        <span class="text-sm text-slate-600 dark:text-slate-300 font-medium">
-                            {{ new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) }}
-                        </span>
-                    </div>
+                <div class="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm">
+                    <CalendarDays class="w-4 h-4 text-slate-400" />
+                    <span class="text-sm text-slate-600 dark:text-slate-300 font-medium">
+                        {{ new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) }}
+                    </span>
                 </div>
             </div>
 
@@ -141,16 +102,15 @@ const progressColor = (p) => {
                 <div
                     v-for="stat in stats"
                     :key="stat.label"
-                    class="bg-white dark:bg-slate-900 rounded-2xl border p-5 shadow-sm hover:shadow-md transition-shadow duration-200"
-                    :class="stat.border"
+                    class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:shadow-md transition-shadow duration-200"
                 >
                     <div class="flex items-start justify-between mb-4">
-                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" :class="stat.iconBg">
-                            <component :is="stat.icon" class="w-5 h-5 text-white" />
+                        <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                            <component :is="stat.icon" class="w-5 h-5 text-slate-500 dark:text-slate-400" />
                         </div>
                         <div
                             class="flex items-center gap-1 text-xs font-medium"
-                            :class="stat.trend === 'up' ? 'text-emerald-600 dark:text-emerald-400' : stat.trend === 'down' ? 'text-rose-500 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'"
+                            :class="stat.trend === 'up' ? 'text-emerald-600 dark:text-emerald-400' : stat.trend === 'down' ? 'text-rose-500 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'"
                         >
                             <TrendingUp v-if="stat.trend === 'up'" class="w-3.5 h-3.5" />
                             <TrendingDown v-else-if="stat.trend === 'down'" class="w-3.5 h-3.5" />
@@ -170,11 +130,11 @@ const progressColor = (p) => {
                 <div class="xl:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
                         <div class="flex items-center gap-2">
-                            <FolderKanban class="w-5 h-5 text-indigo-600" />
-                            <h2 class="font-semibold text-slate-900 dark:text-white">Recent Projects</h2>
+                            <FolderKanban class="w-4 h-4 text-slate-400" />
+                            <h2 class="font-semibold text-slate-900 dark:text-white text-sm">Recent Projects</h2>
                         </div>
-                        <a href="#" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-medium flex items-center gap-1 transition-colors">
-                            View all <ArrowRight class="w-3.5 h-3.5" />
+                        <a href="#" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-medium flex items-center gap-1 transition-colors">
+                            View all <ArrowRight class="w-3 h-3" />
                         </a>
                     </div>
 
@@ -202,7 +162,7 @@ const progressColor = (p) => {
                                     </div>
                                 </div>
                                 <span
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border flex-shrink-0"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border shrink-0"
                                     :class="statusConfig[project.status]?.badge"
                                 >
                                     <span class="w-1.5 h-1.5 rounded-full" :class="statusConfig[project.status]?.dot"></span>
@@ -217,7 +177,7 @@ const progressColor = (p) => {
                                         :style="{ width: project.progress + '%' }"
                                     ></div>
                                 </div>
-                                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 w-8 text-right">{{ project.progress }}%</span>
+                                <span class="text-xs font-semibold text-slate-400 w-8 text-right">{{ project.progress }}%</span>
                             </div>
                         </div>
                     </div>
@@ -227,11 +187,11 @@ const progressColor = (p) => {
                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
                         <div class="flex items-center gap-2">
-                            <CheckSquare class="w-5 h-5 text-indigo-600" />
-                            <h2 class="font-semibold text-slate-900 dark:text-white">Upcoming Tasks</h2>
+                            <CheckSquare class="w-4 h-4 text-slate-400" />
+                            <h2 class="font-semibold text-slate-900 dark:text-white text-sm">Upcoming Tasks</h2>
                         </div>
-                        <a href="#" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-medium flex items-center gap-1 transition-colors">
-                            View all <ArrowRight class="w-3.5 h-3.5" />
+                        <a href="#" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-medium flex items-center gap-1 transition-colors">
+                            View all <ArrowRight class="w-3 h-3" />
                         </a>
                     </div>
 
@@ -242,7 +202,7 @@ const progressColor = (p) => {
                             class="px-5 py-3.5 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group"
                         >
                             <div class="flex items-start gap-3">
-                                <div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-[10px] flex-shrink-0 mt-0.5">
+                                <div class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-[10px] shrink-0 mt-0.5">
                                     {{ task.assignee }}
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -271,20 +231,20 @@ const progressColor = (p) => {
                 <!-- Budget overview -->
                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
                     <div class="flex items-center gap-2 mb-4">
-                        <DollarSign class="w-5 h-5 text-emerald-600" />
+                        <DollarSign class="w-4 h-4 text-slate-400" />
                         <h3 class="font-semibold text-slate-900 dark:text-white text-sm">Budget Overview</h3>
                     </div>
                     <div class="space-y-3">
                         <div v-for="b in [
-                            { label: 'Allocated', value: '$3.28M', pct: '78%', color: 'bg-emerald-500' },
-                            { label: 'Spent',     value: '$1.94M', pct: '46%', color: 'bg-indigo-500' },
-                            { label: 'Remaining', value: '$0.92M', pct: '22%', color: 'bg-amber-400' },
+                            { label: 'Allocated', value: '$3.28M', pct: '78%', color: 'bg-indigo-500' },
+                            { label: 'Spent',     value: '$1.94M', pct: '46%', color: 'bg-slate-400 dark:bg-slate-500' },
+                            { label: 'Remaining', value: '$0.92M', pct: '22%', color: 'bg-slate-200 dark:bg-slate-700' },
                         ]" :key="b.label">
                             <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
                                 <span>{{ b.label }}</span>
                                 <span class="font-semibold text-slate-700 dark:text-slate-200">{{ b.value }}</span>
                             </div>
-                            <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                 <div class="h-full rounded-full" :class="b.color" :style="{ width: b.pct }"></div>
                             </div>
                         </div>
@@ -294,7 +254,7 @@ const progressColor = (p) => {
                 <!-- Resource alerts -->
                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
                     <div class="flex items-center gap-2 mb-4">
-                        <Package class="w-5 h-5 text-indigo-600" />
+                        <Package class="w-4 h-4 text-slate-400" />
                         <h3 class="font-semibold text-slate-900 dark:text-white text-sm">Resource Alerts</h3>
                     </div>
                     <div class="space-y-3">
@@ -304,7 +264,7 @@ const progressColor = (p) => {
                             { name: 'Safety Helmets',     level: 68, status: 'ok' },
                         ]" :key="r.name" class="flex items-center gap-3">
                             <AlertTriangle
-                                class="w-4 h-4 flex-shrink-0"
+                                class="w-4 h-4 shrink-0"
                                 :class="r.status === 'critical' ? 'text-rose-500' : r.status === 'low' ? 'text-amber-500' : 'text-emerald-500'"
                             />
                             <div class="flex-1 min-w-0">
@@ -321,24 +281,23 @@ const progressColor = (p) => {
                     <div class="space-y-2">
                         <a
                             v-for="action in [
-                                { label: 'New Project',  icon: FolderKanban, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40' },
-                                { label: 'Add Task',     icon: CheckSquare,  color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40' },
-                                { label: 'Log Expense',  icon: Receipt,      color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/20 dark:hover:bg-amber-900/40' },
-                                { label: 'Add Resource', icon: Package,      color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40' },
+                                { label: 'New Project',  icon: FolderKanban },
+                                { label: 'Add Task',     icon: CheckSquare  },
+                                { label: 'Log Expense',  icon: Receipt      },
+                                { label: 'Add Resource', icon: Package      },
                             ]"
                             :key="action.label"
                             href="#"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors cursor-pointer"
-                            :class="action.bg"
+                            class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer group"
                         >
-                            <component :is="action.icon" class="w-4 h-4" :class="action.color" />
-                            <span class="text-sm font-medium" :class="action.color">{{ action.label }}</span>
-                            <ArrowRight class="w-3.5 h-3.5 ml-auto" :class="action.color" />
+                            <component :is="action.icon" class="w-4 h-4 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+                            <span class="text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{{ action.label }}</span>
+                            <ArrowRight class="w-3.5 h-3.5 ml-auto text-slate-300 dark:text-slate-600 group-hover:text-indigo-400 transition-colors" />
                         </a>
                     </div>
                 </div>
-            </div>
 
+            </div>
         </div>
     </AuthenticatedLayout>
 </template>

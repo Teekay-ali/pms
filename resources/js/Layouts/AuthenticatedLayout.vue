@@ -129,20 +129,20 @@ const logout = () => {
         <aside
             class="fixed top-0 left-0 h-full z-30 flex flex-col transition-all duration-300 ease-in-out"
             :class="[
-                sidebarCollapsed ? 'w-[72px]' : 'w-64',
+                sidebarCollapsed ? 'w-18' : 'w-64',
                 mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
             ]"
             style="background: linear-gradient(180deg, #0f172a 0%, #0d1424 60%, #0f1729 100%);"
         >
             <!-- Top accent line -->
-            <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"></div>
+            <div class="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-indigo-500/50 to-transparent"></div>
 
             <!-- Logo -->
-            <div class="flex items-center h-16 px-4 flex-shrink-0 border-b border-white/5">
+            <div class="flex items-center h-16 px-4 shrink-0 border-b border-white/5">
                 <div class="flex items-center gap-3 overflow-hidden">
-                    <div class="relative w-9 h-9 flex-shrink-0">
+                    <div class="relative w-9 h-9 shrink-0">
                         <div class="absolute inset-0 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/40"></div>
-                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-400/20 to-transparent rounded-xl"></div>
+                        <div class="absolute inset-0 bg-linear-to-br from-indigo-400/20 to-transparent rounded-xl"></div>
                         <div class="relative w-full h-full flex items-center justify-center">
                             <HardHat class="w-4 h-4 text-white" />
                         </div>
@@ -197,7 +197,7 @@ const logout = () => {
                                     class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-indigo-400 rounded-full"
                                 ></div>
                                 <div
-                                    class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-150"
+                                    class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-150"
                                     :class="isActive(item.route)
                                         ? 'bg-indigo-600 shadow-lg shadow-indigo-500/30'
                                         : 'bg-white/5 group-hover:bg-white/10'"
@@ -236,7 +236,7 @@ const logout = () => {
             </nav>
 
             <!-- User section -->
-            <div class="border-t border-white/5 p-3 flex-shrink-0">
+            <div class="border-t border-white/5 p-3 shrink-0">
                 <Transition
                     enter-active-class="transition-all duration-200"
                     enter-from-class="opacity-0 translate-y-2"
@@ -267,8 +267,8 @@ const logout = () => {
                     :class="userMenuOpen ? 'bg-white/5' : ''"
                     @click="userMenuOpen = !userMenuOpen"
                 >
-                    <div class="relative flex-shrink-0">
-                        <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-lg">
+                    <div class="relative shrink-0">
+                        <div class="w-8 h-8 bg-linear-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-lg">
                             {{ userInitials }}
                         </div>
                         <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-slate-900"></div>
@@ -284,14 +284,14 @@ const logout = () => {
                         <div v-if="!sidebarCollapsed" class="flex-1 min-w-0">
                             <p class="text-sm font-semibold text-white truncate leading-none mb-1">{{ user?.name }}</p>
                             <p class="text-[11px] text-slate-500 truncate flex items-center gap-1">
-                                <Shield class="w-3 h-3 text-indigo-400 flex-shrink-0" />
+                                <Shield class="w-3 h-3 text-indigo-400 shrink-0" />
                                 {{ primaryRole }}
                             </p>
                         </div>
                     </Transition>
                     <ChevronDown
                         v-if="!sidebarCollapsed"
-                        class="w-4 h-4 text-slate-600 flex-shrink-0 transition-transform duration-200"
+                        class="w-4 h-4 text-slate-600 shrink-0 transition-transform duration-200"
                         :class="userMenuOpen ? 'rotate-180 text-slate-400' : ''"
                     />
                 </div>
@@ -300,7 +300,7 @@ const logout = () => {
             <!-- Collapse toggle -->
             <button
                 @click="sidebarCollapsed = !sidebarCollapsed"
-                class="hidden lg:flex absolute -right-3 top-[72px] w-6 h-6 bg-slate-800 hover:bg-indigo-600 border border-slate-700 hover:border-indigo-500 rounded-full items-center justify-center transition-all duration-200 shadow-lg group"
+                class="hidden lg:flex absolute -right-3 top-18 w-6 h-6 bg-slate-800 hover:bg-indigo-600 border border-slate-700 hover:border-indigo-500 rounded-full items-center justify-center transition-all duration-200 shadow-lg group"
             >
                 <ChevronLeft
                     class="w-3 h-3 text-slate-400 group-hover:text-white transition-all duration-300"
@@ -312,10 +312,10 @@ const logout = () => {
         <!-- Main content -->
         <div
             class="flex-1 flex flex-col min-h-screen transition-all duration-300 min-w-0"
-            :class="sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-64'"
+            :class="sidebarCollapsed ? 'lg:ml-18' : 'lg:ml-64'"
         >
             <!-- Top bar -->
-            <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center px-4 lg:px-6 gap-4 sticky top-0 z-10 flex-shrink-0 shadow-sm transition-colors duration-200">
+            <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center px-4 lg:px-6 gap-4 sticky top-0 z-10 shrink-0 shadow-sm transition-colors duration-200">
 
                 <!-- Mobile menu toggle -->
                 <button
@@ -365,7 +365,7 @@ const logout = () => {
                             <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 leading-none mb-0.5">{{ user?.name }}</p>
                             <p class="text-xs text-slate-400">{{ primaryRole }}</p>
                         </div>
-                        <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm cursor-pointer">
+                        <div class="w-8 h-8 bg-linear-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm cursor-pointer">
                             {{ userInitials }}
                         </div>
                     </div>
