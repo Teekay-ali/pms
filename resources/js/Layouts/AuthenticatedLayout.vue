@@ -1,215 +1,382 @@
 <script setup>
-import { ref, watch } from 'vue';
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-import NavLink from '@/Components/NavLink.vue';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link, usePage } from '@inertiajs/vue3';
-import { Toaster } from 'vue-sonner';
+import { ref, computed, watch } from 'vue'
+import { Link, router, usePage } from '@inertiajs/vue3'
+import { toast, Toaster } from 'vue-sonner'
+import { useDarkMode } from '@/Composables/useDarkMode'
+import {
+    HardHat,
+    LayoutDashboard,
+    FolderKanban,
+    CheckSquare,
+    Package,
+    Receipt,
+    Truck,
+    Users,
+    Settings,
+    ChevronLeft,
+    Bell,
+    Search,
+    LogOut,
+    ChevronDown,
+    Menu,
+    X,
+    Shield,
+    UserCircle,
+    Sun,
+    Moon,
+} from 'lucide-vue-next'
 
-const showingNavigationDropdown = ref(false);
+const page = usePage()
+const user = computed(() => page.props.auth.user)
+const permissions = computed(() => page.props.auth.permissions ?? [])
+const roles = computed(() => page.props.auth.roles ?? [])
 
-const page = usePage();
+const can = (permission) => permissions.value.includes(permission)
+const hasRole = (role) => roles.value.includes(role)
+
+const { isDark, toggle: toggleDark } = useDarkMode()
 
 watch(
     () => page.props.flash,
     (flash) => {
         if (flash?.success) toast.success(flash.success)
-        if (flash?.error) toast.error(flash.error)
+        if (flash?.error)   toast.error(flash.error)
         if (flash?.warning) toast.warning(flash.warning)
-        if (flash?.info) toast.info(flash.info)
+        if (flash?.info)    toast.info(flash.info)
     },
     { deep: true }
-);
+)
+
+const sidebarCollapsed = ref(false)
+const mobileOpen = ref(false)
+const userMenuOpen = ref(false)
+
+const navGroups = computed(() => [
+    {
+        label: 'Overview',
+        items: [
+            { label: 'Dashboard', route: 'dashboard', icon: LayoutDashboard, show: true },
+        ],
+    },
+    {
+        label: 'Project Management',
+        items: [
+            { label: 'Projects', route: 'projects.index', icon: FolderKanban, show: can('projects.view') },
+            { label: 'Tasks',    route: 'tasks.index',    icon: CheckSquare,  show: can('tasks.view') },
+        ],
+    },
+    {
+        label: 'Operations',
+        items: [
+            { label: 'Resources', route: 'resources.index', icon: Package,  show: can('resources.view') },
+            { label: 'Expenses',  route: 'expenses.index',  icon: Receipt,  show: can('expenses.view') },
+            { label: 'Vendors',   route: 'vendors.index',   icon: Truck,    show: can('vendors.view') },
+        ],
+    },
+    {
+        label: 'Administration',
+        items: [
+            { label: 'Users',    route: 'dashboard', icon: Users,    show: hasRole('admin') || hasRole('hr') },
+            { label: 'Settings', route: 'dashboard', icon: Settings, show: hasRole('admin') },
+        ],
+    },
+])
+
+const visibleGroups = computed(() =>
+    navGroups.value
+        .map(g => ({ ...g, items: g.items.filter(i => i.show) }))
+        .filter(g => g.items.length)
+)
+
+const isActive = (routeName) => route().current(routeName)
+
+const userInitials = computed(() => {
+    if (!user.value?.name) return '?'
+    return user.value.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+})
+
+const primaryRole = computed(() => {
+    if (!roles.value.length) return 'No Role'
+    return roles.value[0].replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+})
+
+const logout = () => {
+    userMenuOpen.value = false
+    router.post(route('logout'))
+}
 </script>
 
 <template>
-    <div>
-        <div class="min-h-screen bg-gray-100">
-            <nav
-                class="border-b border-gray-100 bg-white"
-            >
-                <!-- Primary Navigation Menu -->
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="flex h-16 justify-between">
-                        <div class="flex">
-                            <!-- Logo -->
-                            <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800"
-                                    />
-                                </Link>
-                            </div>
+    <div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors duration-200">
+        <Toaster position="top-right" richColors closeButton />
 
-                            <!-- Navigation Links -->
-                            <div
-                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
-                            >
-                                <NavLink
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
-                                >
-                                    Dashboard
-                                </NavLink>
-                            </div>
-                        </div>
+        <!-- Mobile overlay -->
+        <Transition
+            enter-active-class="transition-opacity duration-200"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition-opacity duration-200"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+        >
+            <div
+                v-if="mobileOpen"
+                class="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 lg:hidden"
+                @click="mobileOpen = false"
+            />
+        </Transition>
 
-                        <div class="hidden sm:ms-6 sm:flex sm:items-center">
-                            <!-- Settings Dropdown -->
-                            <div class="relative ms-3">
-                                <Dropdown align="right" width="48">
-                                    <template #trigger>
-                                        <span class="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
-                                            >
-                                                {{ $page.props.auth.user.name }}
+        <!-- Sidebar -->
+        <aside
+            class="fixed top-0 left-0 h-full z-30 flex flex-col transition-all duration-300 ease-in-out"
+            :class="[
+                sidebarCollapsed ? 'w-[72px]' : 'w-64',
+                mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+            ]"
+            style="background: linear-gradient(180deg, #0f172a 0%, #0d1424 60%, #0f1729 100%);"
+        >
+            <!-- Top accent line -->
+            <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"></div>
 
-                                                <svg
-                                                    class="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fill-rule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clip-rule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </template>
-
-                                    <template #content>
-                                        <DropdownLink
-                                            :href="route('profile.edit')"
-                                        >
-                                            Profile
-                                        </DropdownLink>
-                                        <DropdownLink
-                                            :href="route('logout')"
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Log Out
-                                        </DropdownLink>
-                                    </template>
-                                </Dropdown>
-                            </div>
-                        </div>
-
-                        <!-- Hamburger -->
-                        <div class="-me-2 flex items-center sm:hidden">
-                            <button
-                                @click="
-                                    showingNavigationDropdown =
-                                        !showingNavigationDropdown
-                                "
-                                class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
-                            >
-                                <svg
-                                    class="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        :class="{
-                                            hidden: showingNavigationDropdown,
-                                            'inline-flex':
-                                                !showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        :class="{
-                                            hidden: !showingNavigationDropdown,
-                                            'inline-flex':
-                                                showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
+            <!-- Logo -->
+            <div class="flex items-center h-16 px-4 flex-shrink-0 border-b border-white/5">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="relative w-9 h-9 flex-shrink-0">
+                        <div class="absolute inset-0 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/40"></div>
+                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-400/20 to-transparent rounded-xl"></div>
+                        <div class="relative w-full h-full flex items-center justify-center">
+                            <HardHat class="w-4 h-4 text-white" />
                         </div>
                     </div>
-                </div>
-
-                <!-- Responsive Navigation Menu -->
-                <div
-                    :class="{
-                        block: showingNavigationDropdown,
-                        hidden: !showingNavigationDropdown,
-                    }"
-                    class="sm:hidden"
-                >
-                    <div class="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            :href="route('dashboard')"
-                            :active="route().current('dashboard')"
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
-                    </div>
-
-                    <!-- Responsive Settings Options -->
-                    <div
-                        class="border-t border-gray-200 pb-1 pt-4"
+                    <Transition
+                        enter-active-class="transition-all duration-200 delay-75"
+                        enter-from-class="opacity-0 -translate-x-2"
+                        enter-to-class="opacity-100 translate-x-0"
+                        leave-active-class="transition-all duration-100"
+                        leave-from-class="opacity-100"
+                        leave-to-class="opacity-0"
                     >
-                        <div class="px-4">
-                            <div
-                                class="text-base font-medium text-gray-800"
-                            >
-                                {{ $page.props.auth.user.name }}
-                            </div>
-                            <div class="text-sm font-medium text-gray-500">
-                                {{ $page.props.auth.user.email }}
-                            </div>
+                        <div v-if="!sidebarCollapsed">
+                            <p class="text-white font-bold text-base tracking-tight whitespace-nowrap leading-none">SitePro</p>
+                            <p class="text-indigo-400/70 text-[10px] whitespace-nowrap tracking-widest uppercase mt-0.5">Construction OS</p>
                         </div>
+                    </Transition>
+                </div>
+            </div>
 
-                        <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                :href="route('logout')"
-                                method="post"
-                                as="button"
+            <!-- Navigation -->
+            <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-5 scrollbar-none">
+                <template v-for="group in visibleGroups" :key="group.label">
+                    <div>
+                        <Transition
+                            enter-active-class="transition-all duration-200"
+                            enter-from-class="opacity-0"
+                            enter-to-class="opacity-100"
+                            leave-active-class="transition-all duration-100"
+                            leave-from-class="opacity-100"
+                            leave-to-class="opacity-0"
+                        >
+                            <p v-if="!sidebarCollapsed"
+                               class="text-[10px] font-semibold tracking-widest uppercase text-slate-500 px-3 mb-1.5">
+                                {{ group.label }}
+                            </p>
+                            <div v-else class="border-t border-white/5 mb-2"></div>
+                        </Transition>
+
+                        <div class="space-y-0.5">
+                            <Link
+                                v-for="item in group.items"
+                                :key="item.label"
+                                :href="route(item.route)"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group relative"
+                                :class="isActive(item.route)
+                                    ? 'bg-indigo-600/20 text-white'
+                                    : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'"
                             >
-                                Log Out
-                            </ResponsiveNavLink>
+                                <div
+                                    v-if="isActive(item.route)"
+                                    class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-indigo-400 rounded-full"
+                                ></div>
+                                <div
+                                    class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-150"
+                                    :class="isActive(item.route)
+                                        ? 'bg-indigo-600 shadow-lg shadow-indigo-500/30'
+                                        : 'bg-white/5 group-hover:bg-white/10'"
+                                >
+                                    <component
+                                        :is="item.icon"
+                                        class="w-4 h-4"
+                                        :class="isActive(item.route) ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'"
+                                    />
+                                </div>
+                                <Transition
+                                    enter-active-class="transition-all duration-200"
+                                    enter-from-class="opacity-0"
+                                    enter-to-class="opacity-100"
+                                    leave-active-class="transition-all duration-100"
+                                    leave-from-class="opacity-100"
+                                    leave-to-class="opacity-0"
+                                >
+                                    <span v-if="!sidebarCollapsed" class="text-sm font-medium whitespace-nowrap">
+                                        {{ item.label }}
+                                    </span>
+                                </Transition>
+
+                                <!-- Tooltip -->
+                                <div
+                                    v-if="sidebarCollapsed"
+                                    class="absolute left-full ml-3 px-2.5 py-1.5 bg-slate-800 border border-slate-700 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl"
+                                >
+                                    {{ item.label }}
+                                    <div class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-800 border-l border-b border-slate-700 rotate-45"></div>
+                                </div>
+                            </Link>
                         </div>
                     </div>
-                </div>
+                </template>
             </nav>
 
-            <!-- Page Heading -->
-            <header
-                class="bg-white shadow"
-                v-if="$slots.header"
+            <!-- User section -->
+            <div class="border-t border-white/5 p-3 flex-shrink-0">
+                <Transition
+                    enter-active-class="transition-all duration-200"
+                    enter-from-class="opacity-0 translate-y-2"
+                    enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition-all duration-150"
+                    leave-from-class="opacity-100"
+                    leave-to-class="opacity-0 translate-y-1"
+                >
+                    <div v-if="userMenuOpen && !sidebarCollapsed"
+                         class="mb-2 p-2 bg-white/5 border border-white/10 rounded-xl space-y-0.5">
+                        <Link
+                            :href="route('dashboard')"
+                            class="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white rounded-lg transition-colors"
+                        >
+                            <UserCircle class="w-4 h-4" /> Profile
+                        </Link>
+                        <button
+                            @click="logout"
+                            class="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors"
+                        >
+                            <LogOut class="w-4 h-4" /> Sign out
+                        </button>
+                    </div>
+                </Transition>
+
+                <div
+                    class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors overflow-hidden"
+                    :class="userMenuOpen ? 'bg-white/5' : ''"
+                    @click="userMenuOpen = !userMenuOpen"
+                >
+                    <div class="relative flex-shrink-0">
+                        <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-lg">
+                            {{ userInitials }}
+                        </div>
+                        <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-slate-900"></div>
+                    </div>
+                    <Transition
+                        enter-active-class="transition-all duration-200"
+                        enter-from-class="opacity-0"
+                        enter-to-class="opacity-100"
+                        leave-active-class="transition-all duration-100"
+                        leave-from-class="opacity-100"
+                        leave-to-class="opacity-0"
+                    >
+                        <div v-if="!sidebarCollapsed" class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-white truncate leading-none mb-1">{{ user?.name }}</p>
+                            <p class="text-[11px] text-slate-500 truncate flex items-center gap-1">
+                                <Shield class="w-3 h-3 text-indigo-400 flex-shrink-0" />
+                                {{ primaryRole }}
+                            </p>
+                        </div>
+                    </Transition>
+                    <ChevronDown
+                        v-if="!sidebarCollapsed"
+                        class="w-4 h-4 text-slate-600 flex-shrink-0 transition-transform duration-200"
+                        :class="userMenuOpen ? 'rotate-180 text-slate-400' : ''"
+                    />
+                </div>
+            </div>
+
+            <!-- Collapse toggle -->
+            <button
+                @click="sidebarCollapsed = !sidebarCollapsed"
+                class="hidden lg:flex absolute -right-3 top-[72px] w-6 h-6 bg-slate-800 hover:bg-indigo-600 border border-slate-700 hover:border-indigo-500 rounded-full items-center justify-center transition-all duration-200 shadow-lg group"
             >
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    <slot name="header" />
+                <ChevronLeft
+                    class="w-3 h-3 text-slate-400 group-hover:text-white transition-all duration-300"
+                    :class="sidebarCollapsed ? 'rotate-180' : ''"
+                />
+            </button>
+        </aside>
+
+        <!-- Main content -->
+        <div
+            class="flex-1 flex flex-col min-h-screen transition-all duration-300"
+            :class="sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-64'"
+        >
+            <!-- Top bar -->
+            <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center px-4 lg:px-6 gap-4 sticky top-0 z-10 flex-shrink-0 shadow-sm transition-colors duration-200">
+
+                <!-- Mobile menu toggle -->
+                <button
+                    @click="mobileOpen = !mobileOpen"
+                    class="lg:hidden p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-300 rounded-lg transition-colors"
+                >
+                    <Menu v-if="!mobileOpen" class="w-5 h-5" />
+                    <X v-else class="w-5 h-5" />
+                </button>
+
+                <!-- Search -->
+                <div class="flex-1 max-w-sm">
+                    <div class="relative">
+                        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Search projects, tasks..."
+                            class="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-300 transition-all"
+                        />
+                    </div>
+                </div>
+
+                <!-- Right actions -->
+                <div class="flex items-center gap-2 ml-auto">
+
+                    <!-- Dark mode toggle -->
+                    <button
+                        @click="toggleDark"
+                        class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                    >
+                        <Sun v-if="isDark" class="w-5 h-5" />
+                        <Moon v-else class="w-5 h-5" />
+                    </button>
+
+                    <!-- Notifications -->
+                    <button class="relative p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                        <Bell class="w-5 h-5" />
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
+                    </button>
+
+                    <!-- Divider -->
+                    <div class="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+                    <!-- User -->
+                    <div class="flex items-center gap-2.5">
+                        <div class="hidden sm:block text-right">
+                            <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 leading-none mb-0.5">{{ user?.name }}</p>
+                            <p class="text-xs text-slate-400">{{ primaryRole }}</p>
+                        </div>
+                        <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm cursor-pointer">
+                            {{ userInitials }}
+                        </div>
+                    </div>
                 </div>
             </header>
 
-            <!-- Page Content -->
-            <main>
+            <!-- Page content -->
+            <main class="flex-1 p-4 lg:p-6 overflow-auto">
                 <slot />
             </main>
         </div>
-
-        <Toaster position="top-right" richColors closeButton />
-
     </div>
 </template>
