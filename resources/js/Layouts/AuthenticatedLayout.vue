@@ -312,7 +312,7 @@ const logout = () => {
 
         <!-- Main content -->
         <div
-            class="flex-1 flex flex-col min-h-screen transition-all duration-300"
+            class="flex-1 flex flex-col min-h-screen transition-all duration-300 min-w-0 overflow-hidden"
             :class="sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-64'"
         >
             <!-- Top bar -->
@@ -374,7 +374,7 @@ const logout = () => {
             </header>
 
             <!-- Page content -->
-            <main class="flex-1 p-4 lg:p-6 overflow-auto">
+            <main class="flex-1 p-4 lg:p-6 overflow-x-hidden overflow-y-auto min-w-0">
                 <slot />
             </main>
         </div>

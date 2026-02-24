@@ -15,12 +15,13 @@ class ProjectController extends Controller
         $this->authorize('viewAny', Project::class);
 
         $projects = Project::with(['projectManager', 'creator'])
-            ->withCount('tasks')
+            ->withCount(['tasks', 'tasks as completed_tasks_count' => fn($q) => $q->where('status', 'completed')])
             ->latest()
             ->paginate(15);
 
         return Inertia::render('Projects/Index', [
             'projects' => $projects,
+            'users'    => User::select('id', 'name')->orderBy('name')->get(),
         ]);
     }
 
@@ -60,7 +61,7 @@ class ProjectController extends Controller
             $project->members()->sync($validated['members']);
         }
 
-        return redirect()->route('projects.show', $project)
+        return redirect()->route('projects.index')
             ->with('success', 'Project created successfully.');
     }
 
@@ -117,7 +118,7 @@ class ProjectController extends Controller
             $project->members()->sync($validated['members']);
         }
 
-        return redirect()->route('projects.show', $project)
+        return redirect()->route('projects.index')
             ->with('success', 'Project updated successfully.');
     }
 
