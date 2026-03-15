@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\DailyLogController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
@@ -22,6 +23,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Settings (alias for profile)
     Route::get('/settings', [ProfileController::class, 'edit'])->name('settings');
+
+
+    // Discussions
+    Route::get('/discussions', [DiscussionController::class, 'index'])->name('discussions.index');
+    Route::post('/discussions', [DiscussionController::class, 'store'])->name('discussions.store');
+    Route::get('/discussions/{discussion}', [DiscussionController::class, 'show'])->name('discussions.show');
+    Route::put('/discussions/{discussion}', [DiscussionController::class, 'update'])->name('discussions.update');
+    Route::delete('/discussions/{discussion}', [DiscussionController::class, 'destroy'])->name('discussions.destroy');
+    Route::post('/discussions/{discussion}/pin', [DiscussionController::class, 'pin'])->name('discussions.pin');
+    Route::post('/discussions/{discussion}/lock', [DiscussionController::class, 'lock'])->name('discussions.lock');
+    Route::post('/discussions/{discussion}/replies', [DiscussionController::class, 'storeReply'])->name('discussions.replies.store');
+    Route::delete('/discussions/{discussion}/replies/{reply}', [DiscussionController::class, 'destroyReply'])->name('discussions.replies.destroy');
+    Route::post('/discussions/react/{type}/{id}', [DiscussionController::class, 'react'])->name('discussions.react');
 
     // Punch List
     Route::post('/projects/{project}/punch-list', [App\Http\Controllers\PunchListController::class, 'store'])->name('punch-list.store');

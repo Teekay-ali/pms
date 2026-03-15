@@ -11,6 +11,7 @@ import {
     BookOpen,
     CalendarDays,
     ClipboardList,
+    MessageSquare,
     DollarSign,
     BarChart2,
     Users,
@@ -54,6 +55,7 @@ const tabs = [
     { key: 'resources', label: 'Resources', icon: Package },
     { key: 'activity', label: 'Activity', icon: Activity },
     { key: 'punch_list', label: 'Punch List', icon: ClipboardList },
+    { key: 'discussions', label: 'Discussions', icon: MessageSquare },
 ]
 
 // ── Computed ───────────────────────────────────────────
@@ -669,8 +671,9 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                             tab.key === 'members'   ? project.members?.length :
                                                 tab.key === 'attachments' ? project.attachments?.length :
                                                     tab.key === 'activity' ? project.activities?.length :
-                                                        tab.key === 'gantt'       ? '' :
-                                                            project.resources?.length
+                                                        tab.key === 'discussions' ? project.discussions?.length :
+                                                            tab.key === 'gantt'       ? '' :
+                                                                project.resources?.length
                             }}
                         </span>
                     </button>
@@ -832,6 +835,46 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                             :can-upload="can('projects.update')"
                             :can-delete="can('projects.delete')"
                         />
+                    </div>
+
+                    <!-- DISCUSSIONS TAB -->
+                    <div v-else-if="activeTab === 'discussions'">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-slate-900 dark:text-white">Discussions</h3>
+                            <Link
+                                :href="route('discussions.index')"
+                                class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                            >
+                                View all discussions →
+                            </Link>
+                        </div>
+
+                        <div v-if="!project.discussions?.length" class="text-center py-12">
+                            <MessageSquare class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">No discussions for this project yet.</p>
+                        </div>
+
+                        <div v-else class="space-y-2">
+                            <Link
+                                v-for="d in project.discussions"
+                                :key="d.id"
+                                :href="route('discussions.show', d.id)"
+                                class="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+                            >
+                                <MessageSquare class="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
+                                        {{ d.title }}
+                                    </p>
+                                    <p class="text-xs text-slate-400 mt-0.5">
+                                        {{ d.author?.name }} · {{ d.replies_count }} replies
+                                    </p>
+                                </div>
+                                <span v-if="d.category" class="text-[10px] font-semibold text-white px-2 py-0.5 rounded-full shrink-0" :style="{ background: d.category.color }">
+                {{ d.category.name }}
+            </span>
+                            </Link>
+                        </div>
                     </div>
 
                     <!-- EXPENSES TAB -->

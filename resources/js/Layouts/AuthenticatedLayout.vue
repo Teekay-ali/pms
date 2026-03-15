@@ -16,6 +16,7 @@ import {
     Users,
     Settings,
     ChevronLeft,
+    MessageSquare,
     Bell,
     Search,
     LogOut,
@@ -58,6 +59,7 @@ const navGroups = computed(() => [
         label: 'Overview',
         items: [
             { label: 'Dashboard', route: 'dashboard', icon: LayoutDashboard, show: true },
+            { label: 'Discussions', route: 'discussions.index', icon: MessageSquare, show: true },
         ],
     },
     {

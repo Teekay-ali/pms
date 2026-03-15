@@ -95,4 +95,9 @@ class Project extends Model
         return $this->hasMany(PunchListItem::class)->latest();
     }
 
+    public function discussions(): HasMany
+    {
+        return $this->hasMany(Discussion::class)->latest();
+    }
+
 }

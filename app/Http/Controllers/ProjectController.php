@@ -97,6 +97,7 @@ class ProjectController extends Controller
             'tasks'    => fn($q) => $q->with('assignee')->orderBy('due_date'),
             'expenses' => fn($q) => $q->with('approvedBy')->orderBy('date', 'desc'),
             'punchListItems' => fn($q) => $q->with(['assignee', 'attachments']),
+            'discussions' => fn($q) => $q->with(['author', 'category'])->withCount('reactions')->latest(),
             'resources',
             'activities.causer',
         ]);
