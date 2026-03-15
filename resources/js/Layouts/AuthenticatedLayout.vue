@@ -10,6 +10,7 @@ import {
     LayoutDashboard,
     FolderKanban,
     CheckSquare,
+    UserCog, Building2, CalendarClock,
     Package,
     Receipt,
     Truck,
@@ -83,6 +84,14 @@ const navGroups = computed(() => [
             { label: 'Users',    route: 'users.index', icon: Users,    show: hasRole('admin') || hasRole('hr') },
             { label: 'Settings', route: 'settings', icon: Settings, show: true },
             { label: 'Activity Log', route: 'activity.index', icon: Activity, show: hasRole('admin') || hasRole('ceo') || hasRole('project_manager') },
+        ],
+    },
+    {
+        label: 'Human Resources',
+        items: [
+            { label: 'Employees',    route: 'hr.employees.index',   icon: UserCog,       show: hasRole('admin') || hasRole('hr') || hasRole('ceo') },
+            { label: 'Departments',  route: 'hr.departments.index', icon: Building2,     show: hasRole('admin') || hasRole('hr') || hasRole('ceo') },
+            { label: 'Leave',        route: 'hr.leave.index',       icon: CalendarClock, show: hasRole('admin') || hasRole('hr') || hasRole('ceo') },
         ],
     },
 ])

@@ -3,6 +3,9 @@
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\DailyLogController;
+use App\Http\Controllers\HR\DepartmentController;
+use App\Http\Controllers\HR\EmployeeController;
+use App\Http\Controllers\HR\LeaveController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -85,6 +88,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Users & Role Management
     Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::patch('/users/{user}/assign-role', [UserController::class, 'assignRole'])->name('users.assign-role');
+
+    // HR Module
+    Route::prefix('hr')->name('hr.')->group(function () {
+        // Departments
+        Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
+        Route::post('/departments', [DepartmentController::class, 'store'])->name('departments.store');
+        Route::put('/departments/{department}', [DepartmentController::class, 'update'])->name('departments.update');
+        Route::delete('/departments/{department}', [DepartmentController::class, 'destroy'])->name('departments.destroy');
+
+        // Employees
+        Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
+        Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
+        Route::get('/employees/{employee}', [EmployeeController::class, 'show'])->name('employees.show');
+        Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
+        Route::post('/employees/{employee}/photo', [EmployeeController::class, 'uploadPhoto'])->name('employees.photo');
+        Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
+
+        // Leave
+        Route::get('/leave', [LeaveController::class, 'index'])->name('leave.index');
+        Route::post('/leave', [LeaveController::class, 'store'])->name('leave.store');
+        Route::post('/leave/{leave}/approve', [LeaveController::class, 'approve'])->name('leave.approve');
+        Route::post('/leave/{leave}/reject', [LeaveController::class, 'reject'])->name('leave.reject');
+        Route::delete('/leave/{leave}', [LeaveController::class, 'destroy'])->name('leave.destroy');
+    });
 
 });
 

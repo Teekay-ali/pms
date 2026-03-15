@@ -19,6 +19,14 @@ class Vendor extends Model
         'phone',
         'type',
         'address',
+        'hourly_rate', 'payment_terms', 'contract_expiry',
+        'insurance_expiry', 'rating', 'notes',
+    ];
+
+    protected $casts = [
+        'contract_expiry'  => 'date',
+        'insurance_expiry' => 'date',
+        'hourly_rate'      => 'decimal:2',
     ];
 
     public function getActivitylogOptions(): LogOptions
