@@ -182,4 +182,42 @@ class ProjectController extends Controller
         return redirect()->route('projects.index')
             ->with('success', 'Project deleted successfully.');
     }
+
+    public function addMember(Request $request, Project $project)
+    {
+        $this->authorize('update', $project);
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        // Prevent duplicate
+        if ($project->members()->where('user_id', $validated['user_id'])->exists()) {
+            return back()->with('error', 'User is already a member.');
+        }
+
+        $project->members()->attach($validated['user_id']);
+
+        $newMember = User::find($validated['user_id']);
+        if ($newMember->id !== auth()->id()) {
+            $newMember->notify(new AddedToProject($project, auth()->user()));
+        }
+
+        return back()->with('success', "{$newMember->name} added to project.");
+    }
+
+    public function removeMember(Request $request, Project $project, User $user)
+    {
+        $this->authorize('update', $project);
+
+        // Prevent removing the project manager
+        if ($project->project_manager_id === $user->id) {
+            return back()->with('error', 'Cannot remove the project manager.');
+        }
+
+        $project->members()->detach($user->id);
+
+        return back()->with('success', "{$user->name} removed from project.");
+    }
+
 }

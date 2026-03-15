@@ -202,6 +202,94 @@ const approveExpense = (id) => {
     router.patch(route('expenses.approve', id))
 }
 
+
+// ── Members ────────────────────────────────────────────
+const showAddMemberModal = ref(false)
+const memberForm = useForm({ user_id: '' })
+
+const existingMemberIds = computed(() =>
+    props.project.members?.map(m => m.id) ?? []
+)
+
+const availableUsers = computed(() =>
+    props.users.filter(u => !existingMemberIds.value.includes(u.id))
+)
+
+const addMember = () => {
+    memberForm.post(route('projects.members.add', props.project.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            showAddMemberModal.value = false
+            memberForm.reset()
+        },
+    })
+}
+
+const removeMember = (userId) => {
+    if (!confirm('Remove this member from the project?')) return
+    router.delete(route('projects.members.remove', [props.project.id, userId]), {
+        preserveScroll: true,
+    })
+}
+
+
+// ── Resources ──────────────────────────────────────────
+const showResourceModal = ref(false)
+const editingResource   = ref(null)
+
+const resourceForm = useForm({
+    name:       '',
+    type:       '',
+    quantity:   '',
+    unit:       '',
+    cost:       '',
+    project_id: '',
+})
+
+const resourceTypeSuggestions = [
+    'Equipment', 'Material', 'Labour', 'Vehicle',
+    'Tool', 'Safety Gear', 'Fuel', 'Electrical', 'Plumbing',
+]
+
+const openCreateResource = () => {
+    editingResource.value  = null
+    resourceForm.reset()
+    resourceForm.project_id = props.project.id
+    showResourceModal.value = true
+}
+
+const openEditResource = (resource) => {
+    editingResource.value   = resource
+    resourceForm.name       = resource.name
+    resourceForm.type       = resource.type ?? ''
+    resourceForm.quantity   = resource.quantity
+    resourceForm.unit       = resource.unit ?? ''
+    resourceForm.cost       = resource.cost ?? ''
+    resourceForm.project_id = resource.project_id
+    showResourceModal.value = true
+}
+
+const submitResource = () => {
+    if (editingResource.value) {
+        resourceForm.put(route('resources.update', editingResource.value.id), {
+            preserveScroll: true,
+            onSuccess: () => { showResourceModal.value = false; resourceForm.reset() },
+        })
+    } else {
+        resourceForm.post(route('resources.store'), {
+            preserveScroll: true,
+            onSuccess: () => { showResourceModal.value = false; resourceForm.reset() },
+        })
+    }
+}
+
+const deleteResource = (id) => {
+    if (confirm('Delete this resource?')) {
+        router.delete(route('resources.destroy', id), { preserveScroll: true })
+    }
+}
+
+
 // ── Input classes ──────────────────────────────────────
 const inputClass  = 'w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-300 dark:focus:border-indigo-600 transition-all'
 const errorClass  = '!border-rose-400 dark:!border-rose-600'
@@ -501,6 +589,13 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                     <div v-else-if="activeTab === 'members'">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-semibold text-slate-900 dark:text-white">Team Members</h3>
+                            <button
+                                v-if="can('projects.assign')"
+                                @click="showAddMemberModal = true"
+                                class="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-colors"
+                            >
+                                <Plus class="w-3.5 h-3.5" /> Add Member
+                            </button>
                         </div>
 
                         <div v-if="!project.members?.length" class="text-center py-12">
@@ -512,19 +607,33 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                             <div
                                 v-for="member in project.members"
                                 :key="member.id"
-                                class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl"
+                                class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl group"
                             >
-                                <div class="w-10 h-10 bg-linear-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0">
+                                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0">
                                     {{ initials(member.name) }}
                                 </div>
-                                <div class="min-w-0">
+                                <div class="min-w-0 flex-1">
                                     <p class="font-semibold text-slate-800 dark:text-slate-100 text-sm truncate">{{ member.name }}</p>
                                     <p class="text-xs text-slate-400 truncate">{{ member.pivot?.role ?? 'Team Member' }}</p>
                                 </div>
-                                <div v-if="project.project_manager_id === member.id" class="ml-auto">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-800">
-                                        PM
-                                    </span>
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <div v-if="project.project_manager_id === member.id" class="relative group/tooltip">
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-800 cursor-help">
+                                            PM
+                                        </span>
+                                        <div class="absolute bottom-full right-0 mb-2 w-48 px-3 py-2 bg-slate-800 text-white text-xs rounded-xl shadow-xl opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-10 text-center leading-snug">
+                                            Reassign project manager before removing
+                                            <div class="absolute top-full right-3 w-2 h-2 bg-slate-800 rotate-45 -translate-y-1"></div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        v-if="can('projects.assign') && project.project_manager_id !== member.id"
+                                        @click="removeMember(member.id)"
+                                        class="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
+                                        title="Remove member"
+                                    >
+                                        <Trash2 class="w-3.5 h-3.5" />
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -534,6 +643,13 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                     <div v-else-if="activeTab === 'resources'">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-semibold text-slate-900 dark:text-white">Resources</h3>
+                            <button
+                                v-if="can('resources.create')"
+                                @click="openCreateResource"
+                                class="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-colors"
+                            >
+                                <Plus class="w-3.5 h-3.5" /> Add Resource
+                            </button>
                         </div>
 
                         <div v-if="!project.resources?.length" class="text-center py-12">
@@ -545,7 +661,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                             <div
                                 v-for="resource in project.resources"
                                 :key="resource.id"
-                                class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl"
+                                class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl group hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             >
                                 <div class="w-9 h-9 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg flex items-center justify-center shrink-0">
                                     <Package class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -555,8 +671,28 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                     <p class="text-xs text-slate-400">{{ resource.type ?? '—' }}</p>
                                 </div>
                                 <div class="text-right shrink-0">
-                                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ resource.quantity }} {{ resource.unit }}</p>
+                                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                                        {{ resource.quantity }} {{ resource.unit }}
+                                    </p>
                                     <p class="text-xs text-slate-400">{{ formatMoney(resource.cost) }}</p>
+                                </div>
+                                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                    <button
+                                        v-if="can('resources.update')"
+                                        @click="openEditResource(resource)"
+                                        class="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors"
+                                        title="Edit"
+                                    >
+                                        <Pencil class="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                        v-if="can('resources.delete')"
+                                        @click="deleteResource(resource.id)"
+                                        class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+                                        title="Delete"
+                                    >
+                                        <Trash2 class="w-3.5 h-3.5" />
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -637,6 +773,50 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
             </template>
         </Modal>
 
+        <!-- ADD MEMBER MODAL -->
+        <Modal :show="showAddMemberModal" title="Add Member" size="sm" @close="showAddMemberModal = false">
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Select User <span class="text-rose-500">*</span>
+                    </label>
+                    <select
+                        v-model="memberForm.user_id"
+                        class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                    >
+                        <option value="">— Select a user —</option>
+                        <option v-for="u in availableUsers" :key="u.id" :value="u.id">
+                            {{ u.name }}
+                        </option>
+                    </select>
+                    <p v-if="memberForm.errors.user_id" class="mt-1.5 text-xs text-rose-500">
+                        {{ memberForm.errors.user_id }}
+                    </p>
+                </div>
+
+                <div v-if="availableUsers.length === 0" class="text-sm text-slate-400 text-center py-2">
+                    All users are already members of this project.
+                </div>
+            </div>
+
+            <template #footer>
+                <div class="flex items-center justify-end gap-3">
+                    <button @click="showAddMemberModal = false"
+                            class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                        Cancel
+                    </button>
+                    <button
+                        @click="addMember"
+                        :disabled="memberForm.processing || !memberForm.user_id"
+                        class="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
+                    >
+                        <Loader2 v-if="memberForm.processing" class="w-4 h-4 animate-spin" />
+                        Add Member
+                    </button>
+                </div>
+            </template>
+        </Modal>
+
         <!-- ── EXPENSE MODAL ────────────────────────────────── -->
         <Modal :show="showExpenseModal" :title="editingExpense ? 'Edit Expense' : 'Log Expense'" size="md" @close="showExpenseModal = false">
             <form @submit.prevent="submitExpense" class="p-6 space-y-5">
@@ -674,6 +854,65 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                     >
                         <Loader2 v-if="expenseForm.processing" class="w-4 h-4 animate-spin" />
                         {{ expenseForm.processing ? 'Saving...' : (editingExpense ? 'Save Changes' : 'Log Expense') }}
+                    </button>
+                </div>
+            </template>
+        </Modal>
+
+        <!-- RESOURCE MODAL -->
+        <Modal
+            :show="showResourceModal"
+            :title="editingResource ? 'Edit Resource' : 'Add Resource'"
+            size="md"
+            @close="showResourceModal = false"
+        >
+            <div class="p-6 space-y-4">
+                <div>
+                    <label :class="labelClass">Name <span class="text-rose-500">*</span></label>
+                    <input v-model="resourceForm.name" type="text" :class="[inputClass, resourceForm.errors.name ? errorClass : '']" placeholder="e.g. Steel Beams" />
+                    <p v-if="resourceForm.errors.name" :class="errorMsgClass">{{ resourceForm.errors.name }}</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label :class="labelClass">Type</label>
+                        <input v-model="resourceForm.type" type="text" :class="inputClass" placeholder="e.g. Material" list="resource-types" />
+                        <datalist id="resource-types">
+                            <option v-for="t in resourceTypeSuggestions" :key="t" :value="t" />
+                        </datalist>
+                    </div>
+                    <div>
+                        <label :class="labelClass">Unit</label>
+                        <input v-model="resourceForm.unit" type="text" :class="inputClass" placeholder="e.g. kg, pcs" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label :class="labelClass">Quantity <span class="text-rose-500">*</span></label>
+                        <input v-model="resourceForm.quantity" type="number" min="0" step="0.01" :class="[inputClass, resourceForm.errors.quantity ? errorClass : '']" placeholder="0" />
+                        <p v-if="resourceForm.errors.quantity" :class="errorMsgClass">{{ resourceForm.errors.quantity }}</p>
+                    </div>
+                    <div>
+                        <label :class="labelClass">Unit Cost</label>
+                        <input v-model="resourceForm.cost" type="number" min="0" step="0.01" :class="inputClass" placeholder="0.00" />
+                    </div>
+                </div>
+            </div>
+
+            <template #footer>
+                <div class="flex items-center justify-end gap-3">
+                    <button @click="showResourceModal = false"
+                            class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                        Cancel
+                    </button>
+                    <button
+                        @click="submitResource"
+                        :disabled="resourceForm.processing"
+                        class="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
+                    >
+                        <Loader2 v-if="resourceForm.processing" class="w-4 h-4 animate-spin" />
+                        {{ editingResource ? 'Save Changes' : 'Add Resource' }}
                     </button>
                 </div>
             </template>

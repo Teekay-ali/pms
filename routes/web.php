@@ -31,6 +31,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Projects
     Route::resource('projects', ProjectController::class);
+    Route::post('/projects/{project}/members', [ProjectController::class, 'addMember'])->name('projects.members.add');
+    Route::delete('/projects/{project}/members/{user}', [ProjectController::class, 'removeMember'])->name('projects.members.remove');
 
     // Tasks
     Route::resource('tasks', TaskController::class);
