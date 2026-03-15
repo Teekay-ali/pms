@@ -7,6 +7,7 @@ import { createApp, h } from 'vue';
 // import { ZiggyVue } from 'ziggy-js';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import AppLayout from './Layouts/AppLayout.vue';
+import ganttastic from '@infectoone/vue-ganttastic'
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -24,6 +25,7 @@ createInertiaApp({
         return createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
+            .use(ganttastic)
             .mount(el);
     },
     progress: {

@@ -4,10 +4,12 @@ import Modal from '@/Components/Modal.vue'
 import AttachmentUploader from '@/Components/AttachmentUploader.vue'
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
+import { GGanttChart, GGanttRow } from '@infectoone/vue-ganttastic'
 import {
     ArrowLeft,
     CalendarDays,
     DollarSign,
+    BarChart2,
     Users,
     CheckSquare,
     Package,
@@ -40,6 +42,7 @@ const tabs = [
     { key: 'attachments', label: 'Files', icon: Paperclip },
     { key: 'tasks',     label: 'Tasks',     icon: CheckSquare },
     { key: 'expenses',  label: 'Expenses',  icon: Receipt },
+    { key: 'gantt', label: 'Gantt', icon: BarChart2 },
     { key: 'members',   label: 'Members',   icon: Users },
     { key: 'resources', label: 'Resources', icon: Package },
 ]
@@ -292,6 +295,45 @@ const deleteResource = (id) => {
     }
 }
 
+const statusColor = (status) => ({
+    completed:   '#10b981',
+    in_progress: '#6366f1',
+    blocked:     '#ef4444',
+    review:      '#f59e0b',
+    pending:     '#94a3b8',
+}[status] ?? '#94a3b8')
+
+const ganttRows = computed(() =>
+    (props.project.tasks ?? [])
+        .filter(t => t.start_date && t.due_date)
+        .map(t => ({
+            label: t.name,
+            bars: [{
+                myStart: t.start_date.substring(0, 10) + ' 00:00',
+                myEnd:   t.due_date.substring(0, 10)   + ' 23:59',
+                ganttBarConfig: {
+                    id:              String(t.id),
+                    label:           t.name,
+                    backgroundColor: statusColor(t.status),
+                    borderRadius:    '6px',
+                }
+            }]
+        }))
+)
+
+const ganttStart = computed(() => {
+    const dates = (props.project.tasks ?? [])
+        .filter(t => t.start_date)
+        .map(t => t.start_date.substring(0, 10))
+    return dates.length ? dates.sort()[0] + ' 00:00' : new Date().toISOString().substring(0, 10) + ' 00:00'
+})
+
+const ganttEnd = computed(() => {
+    const dates = (props.project.tasks ?? [])
+        .filter(t => t.due_date)
+        .map(t => t.due_date.substring(0, 10))
+    return dates.length ? dates.sort().reverse()[0] + ' 23:59' : new Date().toISOString().substring(0, 10) + ' 23:59'
+})
 
 // ── Input classes ──────────────────────────────────────
 const inputClass  = 'w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-300 dark:focus:border-indigo-600 transition-all'
@@ -447,7 +489,9 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                 tab.key === 'tasks'     ? project.tasks?.length :
                                     tab.key === 'expenses'  ? project.expenses?.length :
                                         tab.key === 'members'   ? project.members?.length :
-                                            project.resources?.length
+                                            tab.key === 'attachments' ? project.attachments?.length :
+                                                tab.key === 'gantt'       ? '' :
+                                                    project.resources?.length
                             }}
                         </span>
                     </button>
@@ -599,6 +643,49 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- GANTT TAB -->
+                    <div v-else-if="activeTab === 'gantt'">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-slate-900 dark:text-white">Gantt Chart</h3>
+                            <div class="flex items-center gap-3 text-xs text-slate-400">
+                                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-indigo-500 inline-block"></span> In Progress</span>
+                                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Completed</span>
+                                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Blocked</span>
+                                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-slate-400 inline-block"></span> Pending</span>
+                            </div>
+                        </div>
+
+                        <div v-if="ganttRows.length === 0" class="text-center py-12">
+                            <BarChart2 class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">No tasks with start dates yet.</p>
+                            <p class="text-xs text-slate-400 mt-1">Add start dates to tasks to see them here.</p>
+                        </div>
+
+                        <div v-else class="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                            <g-gantt-chart
+                                :chart-start="ganttStart"
+                                :chart-end="ganttEnd"
+                                bar-start="myStart"
+                                bar-end="myEnd"
+                                precision="month"
+                                date-format="YYYY-MM-DD HH:mm"
+                                width="100%"
+                                :row-height="40"
+                                font="14px Inter, sans-serif"
+                                label-column-title="Task"
+                                :label-column-width="220"
+                                color-scheme="default"
+                            >
+                                <g-gantt-row
+                                    v-for="row in ganttRows"
+                                    :key="row.label"
+                                    :label="row.label"
+                                    :bars="row.bars"
+                                />
+                            </g-gantt-chart>
                         </div>
                     </div>
 

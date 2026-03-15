@@ -45,6 +45,7 @@ const form = useForm({
     assigned_to: '',
     name:        '',
     description: '',
+    start_date:  '',
     due_date:    '',
     priority:    'medium',
     status:      'pending',
@@ -101,6 +102,7 @@ const openEdit = (task) => {
     form.assigned_to     = task.assigned_to ?? ''
     form.name            = task.name
     form.description     = task.description ?? ''
+    form.start_date      = task.start_date?.substring(0, 10) ?? ''
     form.due_date        = task.due_date?.substring(0, 10) ?? ''
     form.priority        = task.priority
     form.status          = task.status
@@ -377,6 +379,15 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                             <option value="">— Unassigned —</option>
                             <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
                         </select>
+                    </div>
+
+                    <div>
+                        <label :class="labelClass">Start Date</label>
+                        <input
+                            v-model="form.start_date"
+                            type="date"
+                            :class="inputClass"
+                        />
                     </div>
 
                     <div>

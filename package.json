@@ -21,6 +21,7 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
+        "@infectoone/vue-ganttastic": "^2.3.2",
         "lucide-vue-next": "^0.575.0",
         "vue-sonner": "^2.0.9"
     }
