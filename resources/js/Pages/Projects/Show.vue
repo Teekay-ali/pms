@@ -151,7 +151,7 @@ const punchStatusConfig = {
 
 // ── Helpers ────────────────────────────────────────────
 const formatDate  = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
-const formatMoney = (v) => v ? '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'
+const formatMoney = (v) => v ? '₦' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'
 const initials    = (name) => name?.split(' ').map(n => n[0]).slice(0, 2).join('') ?? '?'
 const isOverdue   = (d, status) => d && status !== 'completed' && new Date(d) < new Date()
 const fmtDueDate  = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'
@@ -1037,7 +1037,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label :class="labelClass">Amount ($) <span class="text-rose-500">*</span></label>
+                        <label :class="labelClass">Amount (₦) <span class="text-rose-500">*</span></label>
                         <input v-model="expenseForm.amount" type="number" min="0" step="0.01" :class="[inputClass, expenseForm.errors.amount ? errorClass : '']" />
                         <p v-if="expenseForm.errors.amount" :class="errorMsgClass">{{ expenseForm.errors.amount }}</p>
                     </div>

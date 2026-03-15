@@ -26,7 +26,7 @@ class ExpenseSubmitted extends Notification
         return [
             'type' => 'expense_submitted',
             'title' => 'Expense Awaiting Approval',
-            'message' => "{$this->submittedBy->name} submitted an expense of \${$this->expense->amount} for \"{$this->expense->project?->name}\"",
+            'message' => "{$this->submittedBy->name} submitted an expense of ₦{$this->expense->amount} for \"{$this->expense->project?->name}\"",
             'url' => route('expenses.index'),
             'meta' => [
                 'expense_id' => $this->expense->id,

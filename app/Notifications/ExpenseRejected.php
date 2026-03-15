@@ -26,7 +26,7 @@ class ExpenseRejected extends Notification
         return [
             'type' => 'expense_rejected',
             'title' => 'Expense Rejected',
-            'message' => "Your expense of \${$this->expense->amount} for \"{$this->expense->project?->name}\" was rejected by {$this->rejectedBy->name}",
+            'message' => "Your expense of ₦{$this->expense->amount} for \"{$this->expense->project?->name}\" was rejected by {$this->rejectedBy->name}",
             'url' => route('expenses.index'),
             'meta' => [
                 'expense_id' => $this->expense->id,

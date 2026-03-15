@@ -99,7 +99,7 @@ const formatDate = (d) => d
     ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     : '—'
 
-const formatBudget = (b) => b ? '$' + Number(b).toLocaleString() : '—'
+const formatBudget = (b) => b ? '₦' + Number(b).toLocaleString() : '—'
 
 const initials = (name) => name?.split(' ').map(n => n[0]).slice(0, 2).join('') ?? '?'
 
@@ -572,7 +572,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                     </div>
 
                     <div>
-                        <label :class="labelClass">Budget ($)</label>
+                        <label :class="labelClass">Budget (₦)</label>
                         <input v-model="editForm.budget" type="number" min="0" step="0.01" :class="[inputClass, editForm.errors.budget ? errorClass : '']" />
                         <p v-if="editForm.errors.budget" :class="errorMsgClass">{{ editForm.errors.budget }}</p>
                     </div>

@@ -93,10 +93,10 @@ const progressColor = (p) => {
 }
 
 function fmtMoney(v) {
-    if (!v) return '$0'
-    if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`
-    if (v >= 1_000)     return `$${(v / 1_000).toFixed(0)}K`
-    return `$${v}`
+    if (!v) return '₦0'
+    if (v >= 1_000_000) return `₦${(v / 1_000_000).toFixed(1)}M`
+    if (v >= 1_000)     return `₦${(v / 1_000).toFixed(0)}K`
+    return `₦${v}`
 }
 
 const fmtDate = (dateStr) => {
@@ -302,9 +302,9 @@ const isOverdue = (dateStr) => {
                     </div>
                     <div class="space-y-3">
                         <div v-for="b in [
-                            { label: 'Allocated', value: '$3.28M', pct: '78%', color: 'bg-indigo-500' },
-                            { label: 'Spent',     value: '$1.94M', pct: '46%', color: 'bg-slate-400 dark:bg-slate-500' },
-                            { label: 'Remaining', value: '$0.92M', pct: '22%', color: 'bg-slate-200 dark:bg-slate-700' },
+                            { label: 'Allocated', value: '₦3.28M', pct: '78%', color: 'bg-indigo-500' },
+                            { label: 'Spent',     value: '₦1.94M', pct: '46%', color: 'bg-slate-400 dark:bg-slate-500' },
+                            { label: 'Remaining', value: '₦0.92M', pct: '22%', color: 'bg-slate-200 dark:bg-slate-700' },
                         ]" :key="b.label">
                             <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
                                 <span>{{ b.label }}</span>

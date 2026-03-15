@@ -26,7 +26,7 @@ class ExpenseApproved extends Notification
         return [
             'type' => 'expense_approved',
             'title' => 'Expense Approved',
-            'message' => "Your expense of \${$this->expense->amount} for \"{$this->expense->project?->name}\" was approved by {$this->approvedBy->name}",
+            'message' => "Your expense of ₦{$this->expense->amount} for \"{$this->expense->project?->name}\" was approved by {$this->approvedBy->name}",
             'url' => route('expenses.index'),
             'meta' => [
                 'expense_id' => $this->expense->id,
