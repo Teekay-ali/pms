@@ -95,6 +95,7 @@ class ProjectController extends Controller
             'tasks'    => fn($q) => $q->with('assignee')->orderBy('due_date'),
             'expenses' => fn($q) => $q->with('approvedBy')->orderBy('date', 'desc'),
             'resources',
+            'activities.causer',
         ]);
 
         $project->loadCount([

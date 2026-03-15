@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Models\Activity;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Project extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
 
     protected $fillable = [
         'name',
@@ -29,6 +32,15 @@ class Project extends Model
         'end_date' => 'date',
         'budget' => 'decimal:2',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'status', 'budget', 'project_manager_id'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => "Project {$eventName}");
+    }
 
     public function creator(): BelongsTo
     {
@@ -65,6 +77,11 @@ class Project extends Model
     public function attachments(): \Illuminate\Database\Eloquent\Relations\MorphMany
     {
         return $this->morphMany(Attachment::class, 'attachable')->latest();
+    }
+
+    public function activities()
+    {
+        return $this->morphMany(Activity::class, 'subject');
     }
 
 }

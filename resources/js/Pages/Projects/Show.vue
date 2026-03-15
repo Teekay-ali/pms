@@ -6,6 +6,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 import { GGanttChart, GGanttRow } from '@infectoone/vue-ganttastic'
 import {
+    Activity,
     ArrowLeft,
     CalendarDays,
     DollarSign,
@@ -19,6 +20,8 @@ import {
     Plus,
     Loader2,
     Clock,
+    CheckCircle,
+    XCircle,
     AlertTriangle,
     Paperclip,
     ChevronRight,
@@ -45,6 +48,7 @@ const tabs = [
     { key: 'gantt', label: 'Gantt', icon: BarChart2 },
     { key: 'members',   label: 'Members',   icon: Users },
     { key: 'resources', label: 'Resources', icon: Package },
+    { key: 'activity', label: 'Activity', icon: Activity },
 ]
 
 // ── Computed ───────────────────────────────────────────
@@ -119,6 +123,7 @@ const taskForm = useForm({
     assigned_to: '',
     name:        '',
     description: '',
+    start_date:  '',
     due_date:    '',
     priority:    'medium',
     status:      'pending',
@@ -137,6 +142,7 @@ const openEditTask = (task) => {
     taskForm.assigned_to = task.assigned_to ?? ''
     taskForm.name        = task.name
     taskForm.description = task.description ?? ''
+    taskForm.start_date  = task.start_date?.substring(0, 10) ?? ''
     taskForm.due_date    = task.due_date?.substring(0, 10) ?? ''
     taskForm.priority    = task.priority
     taskForm.status      = task.status
@@ -293,6 +299,10 @@ const deleteResource = (id) => {
     if (confirm('Delete this resource?')) {
         router.delete(route('resources.destroy', id), { preserveScroll: true })
     }
+}
+
+const rejectExpense = (id) => {
+    router.patch(route('expenses.reject', id))
 }
 
 const statusColor = (status) => ({
@@ -490,8 +500,9 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                     tab.key === 'expenses'  ? project.expenses?.length :
                                         tab.key === 'members'   ? project.members?.length :
                                             tab.key === 'attachments' ? project.attachments?.length :
-                                                tab.key === 'gantt'       ? '' :
-                                                    project.resources?.length
+                                                tab.key === 'activity' ? project.activities?.length :
+                                                    tab.key === 'gantt'       ? '' :
+                                                        project.resources?.length
                             }}
                         </span>
                     </button>
@@ -639,6 +650,22 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                             class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
                                         >
                                             <Trash2 class="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                            v-if="can('expenses.approve') && expense.status === 'pending'"
+                                            @click="approveExpense(expense.id)"
+                                            class="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+                                            title="Approve"
+                                        >
+                                            <CheckCircle class="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                            v-if="can('expenses.approve') && expense.status === 'pending'"
+                                            @click="rejectExpense(expense.id)"
+                                            class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+                                            title="Reject"
+                                        >
+                                            <XCircle class="w-3.5 h-3.5" />
                                         </button>
                                     </div>
                                 </div>
@@ -802,6 +829,37 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                         </div>
                     </div>
 
+                    <!-- ACTIVITY TAB -->
+                    <div v-else-if="activeTab === 'activity'">
+                        <h3 class="font-semibold text-slate-900 dark:text-white mb-4">Activity</h3>
+
+                        <div v-if="!project.activities?.length" class="text-center py-12">
+                            <Activity class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">No activity recorded yet.</p>
+                        </div>
+
+                        <div v-else class="space-y-1">
+                            <div
+                                v-for="log in project.activities"
+                                :key="log.id"
+                                class="flex gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            >
+                                <div class="w-7 h-7 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                                    <Activity class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-slate-700 dark:text-slate-200">
+                                        <span class="font-semibold">{{ log.causer?.name ?? 'System' }}</span>
+                                        <span class="text-slate-500 dark:text-slate-400"> {{ log.description }}</span>
+                                    </p>
+                                    <p class="text-xs text-slate-400 mt-0.5">
+                                        {{ new Date(log.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -829,6 +887,11 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                             <option value="">— Unassigned —</option>
                             <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
                         </select>
+                    </div>
+
+                    <div>
+                        <label :class="labelClass">Start Date</label>
+                        <input v-model="taskForm.start_date" type="date" :class="inputClass" />
                     </div>
 
                     <div>

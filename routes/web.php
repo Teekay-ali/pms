@@ -17,6 +17,8 @@ Route::get('/', fn() => redirect()->route('dashboard'));
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    Route::get('/activity', [App\Http\Controllers\ActivityController::class, 'index'])->name('activity.index');
+
     // Settings (alias for profile)
     Route::get('/settings', [ProfileController::class, 'edit'])->name('settings');
 

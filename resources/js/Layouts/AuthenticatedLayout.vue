@@ -5,6 +5,7 @@ import { toast } from 'vue-sonner'
 import NotificationBell from '@/Components/NotificationBell.vue'
 import { useDarkMode } from '@/Composables/useDarkMode'
 import {
+    Activity,
     HardHat,
     LayoutDashboard,
     FolderKanban,
@@ -79,6 +80,7 @@ const navGroups = computed(() => [
         items: [
             { label: 'Users',    route: 'users.index', icon: Users,    show: hasRole('admin') || hasRole('hr') },
             { label: 'Settings', route: 'settings', icon: Settings, show: true },
+            { label: 'Activity Log', route: 'activity.index', icon: Activity, show: hasRole('admin') || hasRole('ceo') || hasRole('project_manager') },
         ],
     },
 ])
