@@ -10,6 +10,7 @@ import {
     ArrowLeft,
     BookOpen,
     CalendarDays,
+    ClipboardList,
     DollarSign,
     BarChart2,
     Users,
@@ -52,6 +53,7 @@ const tabs = [
     { key: 'members',   label: 'Members',   icon: Users },
     { key: 'resources', label: 'Resources', icon: Package },
     { key: 'activity', label: 'Activity', icon: Activity },
+    { key: 'punch_list', label: 'Punch List', icon: ClipboardList },
 ]
 
 // ── Computed ───────────────────────────────────────────
@@ -429,6 +431,79 @@ const weatherEmoji = (w) => {
     if (lower.includes('fog'))    return '🌫️'
     return '🌤️'
 }
+
+// ── Punch List ─────────────────────────────────────────
+const showPunchModal  = ref(false)
+const editingItem     = ref(null)
+
+const punchForm = useForm({
+    description:      '',
+    location_on_site: '',
+    assigned_to:      '',
+    priority:         'medium',
+    status:           'open',
+    due_date:         '',
+})
+
+const openCreatePunch = () => {
+    editingItem.value = null
+    punchForm.reset()
+    punchForm.priority = 'medium'
+    punchForm.status   = 'open'
+    showPunchModal.value = true
+}
+
+const openEditPunch = (item) => {
+    editingItem.value         = item
+    punchForm.description     = item.description
+    punchForm.location_on_site = item.location_on_site ?? ''
+    punchForm.assigned_to     = item.assigned_to ?? ''
+    punchForm.priority        = item.priority
+    punchForm.status          = item.status
+    punchForm.due_date        = item.due_date?.substring(0, 10) ?? ''
+    showPunchModal.value      = true
+}
+
+const submitPunch = () => {
+    if (editingItem.value) {
+        punchForm.put(route('punch-list.update', [props.project.id, editingItem.value.id]), {
+            preserveScroll: true,
+            onSuccess: () => { showPunchModal.value = false; punchForm.reset() },
+        })
+    } else {
+        punchForm.post(route('punch-list.store', props.project.id), {
+            preserveScroll: true,
+            onSuccess: () => { showPunchModal.value = false; punchForm.reset() },
+        })
+    }
+}
+
+const deletePunchItem = (id) => {
+    if (confirm('Delete this item?')) {
+        router.delete(route('punch-list.destroy', [props.project.id, id]), { preserveScroll: true })
+    }
+}
+
+const punchPriorityConfig = {
+    high:   'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800',
+    medium: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800',
+    low:    'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
+}
+
+const punchStatusConfig = {
+    open:        { label: 'Open',        class: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800' },
+    in_progress: { label: 'In Progress', class: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800' },
+    completed:   { label: 'Completed',   class: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800' },
+}
+
+const punchStats = computed(() => {
+    const items = props.project.punch_list_items ?? []
+    return {
+        total:     items.length,
+        open:      items.filter(i => i.status === 'open').length,
+        completed: items.filter(i => i.status === 'completed').length,
+    }
+})
 
 // ── Input classes ──────────────────────────────────────
 const inputClass  = 'w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-300 dark:focus:border-indigo-600 transition-all'
@@ -1031,6 +1106,121 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                         </div>
                     </div>
 
+                    <!-- PUNCH LIST TAB -->
+                    <div v-else-if="activeTab === 'punch_list'">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="font-semibold text-slate-900 dark:text-white">Punch List</h3>
+                                <p v-if="punchStats.total > 0" class="text-xs text-slate-400 mt-0.5">
+                                    {{ punchStats.completed }}/{{ punchStats.total }} completed
+                                    · {{ punchStats.open }} open
+                                </p>
+                            </div>
+                            <button
+                                v-if="can('projects.update')"
+                                @click="openCreatePunch"
+                                class="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-colors"
+                            >
+                                <Plus class="w-3.5 h-3.5" /> Add Item
+                            </button>
+                        </div>
+
+                        <!-- Progress bar -->
+                        <div v-if="punchStats.total > 0" class="mb-4">
+                            <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div
+                                    class="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                                    :style="{ width: (punchStats.completed / punchStats.total * 100) + '%' }"
+                                ></div>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1">
+                                {{ Math.round(punchStats.completed / punchStats.total * 100) }}% complete
+                            </p>
+                        </div>
+
+                        <div v-if="!project.punch_list_items?.length" class="text-center py-12">
+                            <ClipboardList class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">No punch list items yet.</p>
+                            <p class="text-xs text-slate-400 mt-1">Add items that need to be completed before handover.</p>
+                        </div>
+
+                        <div v-else class="space-y-2">
+                            <div
+                                v-for="item in project.punch_list_items"
+                                :key="item.id"
+                                class="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 group transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                                :class="{ 'opacity-60': item.status === 'completed' }"
+                            >
+                                <!-- Status indicator -->
+                                <div class="mt-0.5 shrink-0">
+                                    <div
+                                        class="w-5 h-5 rounded-full border-2 flex items-center justify-center cursor-pointer transition-colors"
+                                        :class="item.status === 'completed'
+                        ? 'bg-emerald-500 border-emerald-500'
+                        : 'border-slate-300 dark:border-slate-600 hover:border-emerald-400'"
+                                        @click="() => {
+                        openEditPunch(item)
+                        punchForm.status = item.status === 'completed' ? 'open' : 'completed'
+                        submitPunch()
+                    }"
+                                    >
+                                        <svg v-if="item.status === 'completed'" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                <!-- Content -->
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-slate-800 dark:text-slate-100"
+                                       :class="{ 'line-through text-slate-400': item.status === 'completed' }">
+                                        {{ item.description }}
+                                    </p>
+                                    <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                    <span v-if="item.location_on_site"
+                          class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                        📍 {{ item.location_on_site }}
+                    </span>
+                                        <span v-if="item.assignee"
+                                              class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                        👷 {{ item.assignee.name }}
+                    </span>
+                                        <span v-if="item.due_date"
+                                              class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                        📅 {{ formatDate(item.due_date) }}
+                    </span>
+                                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-semibold border capitalize"
+                                              :class="punchPriorityConfig[item.priority]">
+                        {{ item.priority }}
+                    </span>
+                                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-semibold border"
+                                              :class="punchStatusConfig[item.status]?.class">
+                        {{ punchStatusConfig[item.status]?.label }}
+                    </span>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                    <button
+                                        v-if="can('projects.update')"
+                                        @click="openEditPunch(item)"
+                                        class="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                                    >
+                                        <Pencil class="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                        v-if="can('projects.update')"
+                                        @click="deletePunchItem(item.id)"
+                                        class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                                    >
+                                        <Trash2 class="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -1337,6 +1527,87 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                     >
                         <Loader2 v-if="resourceForm.processing" class="w-4 h-4 animate-spin" />
                         {{ editingResource ? 'Save Changes' : 'Add Resource' }}
+                    </button>
+                </div>
+            </template>
+        </Modal>
+
+        <!-- PUNCH LIST MODAL -->
+        <Modal
+            :show="showPunchModal"
+            :title="editingItem ? 'Edit Item' : 'Add Punch List Item'"
+            size="md"
+            @close="showPunchModal = false"
+        >
+            <div class="p-6 space-y-4">
+                <div>
+                    <label :class="labelClass">Description <span class="text-rose-500">*</span></label>
+                    <textarea
+                        v-model="punchForm.description"
+                        rows="2"
+                        placeholder="e.g. Touch up paint on bedroom wall"
+                        :class="[inputClass, 'resize-none', punchForm.errors.description ? errorClass : '']"
+                    ></textarea>
+                    <p v-if="punchForm.errors.description" :class="errorMsgClass">{{ punchForm.errors.description }}</p>
+                </div>
+
+                <div>
+                    <label :class="labelClass">Location on Site</label>
+                    <input
+                        v-model="punchForm.location_on_site"
+                        type="text"
+                        placeholder="e.g. Master Bedroom, Kitchen, Bathroom 2"
+                        :class="inputClass"
+                    />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label :class="labelClass">Priority</label>
+                        <select v-model="punchForm.priority" :class="inputClass">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label :class="labelClass">Due Date</label>
+                        <input v-model="punchForm.due_date" type="date" :class="inputClass" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label :class="labelClass">Assign To</label>
+                        <select v-model="punchForm.assigned_to" :class="inputClass">
+                            <option value="">— Unassigned —</option>
+                            <option v-for="u in users" :key="u.id" :value="u.id">{{ u.name }}</option>
+                        </select>
+                    </div>
+                    <div v-if="editingItem">
+                        <label :class="labelClass">Status</label>
+                        <select v-model="punchForm.status" :class="inputClass">
+                            <option value="open">Open</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <template #footer>
+                <div class="flex items-center justify-end gap-3">
+                    <button @click="showPunchModal = false"
+                            class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                        Cancel
+                    </button>
+                    <button
+                        @click="submitPunch"
+                        :disabled="punchForm.processing"
+                        class="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
+                    >
+                        <Loader2 v-if="punchForm.processing" class="w-4 h-4 animate-spin" />
+                        {{ editingItem ? 'Save Changes' : 'Add Item' }}
                     </button>
                 </div>
             </template>

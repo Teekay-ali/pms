@@ -96,6 +96,7 @@ class ProjectController extends Controller
             'dailyLogs.logger',
             'tasks'    => fn($q) => $q->with('assignee')->orderBy('due_date'),
             'expenses' => fn($q) => $q->with('approvedBy')->orderBy('date', 'desc'),
+            'punchListItems' => fn($q) => $q->with(['assignee', 'attachments']),
             'resources',
             'activities.causer',
         ]);

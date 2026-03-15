@@ -23,6 +23,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Settings (alias for profile)
     Route::get('/settings', [ProfileController::class, 'edit'])->name('settings');
 
+    // Punch List
+    Route::post('/projects/{project}/punch-list', [App\Http\Controllers\PunchListController::class, 'store'])->name('punch-list.store');
+    Route::put('/projects/{project}/punch-list/{item}', [App\Http\Controllers\PunchListController::class, 'update'])->name('punch-list.update');
+    Route::delete('/projects/{project}/punch-list/{item}', [App\Http\Controllers\PunchListController::class, 'destroy'])->name('punch-list.destroy');
+
     // Daily Logs
     Route::post('/projects/{project}/daily-logs', [DailyLogController::class, 'store'])->name('daily-logs.store');
     Route::put('/projects/{project}/daily-logs/{dailyLog}', [DailyLogController::class, 'update'])->name('daily-logs.update');

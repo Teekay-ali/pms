@@ -90,4 +90,9 @@ class Project extends Model
         return $this->hasMany(DailyLog::class)->latest('date');
     }
 
+    public function punchListItems(): HasMany
+    {
+        return $this->hasMany(PunchListItem::class)->latest();
+    }
+
 }
