@@ -9,6 +9,7 @@ export default defineConfig({
         laravel({
             input: 'resources/js/app.js',
             refresh: true,
+            detectTls: 'pms.test',
         }),
         vue({
             template: {

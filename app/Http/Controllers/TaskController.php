@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\TaskAssigned;
+use App\Notifications\TaskStatusChanged;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,12 +32,9 @@ class TaskController extends Controller
     {
         $this->authorize('create', Task::class);
 
-        $projects = Project::select('id', 'name')->orderBy('name')->get();
-        $users    = User::select('id', 'name')->orderBy('name')->get();
-
         return Inertia::render('Tasks/Create', [
-            'projects' => $projects,
-            'users'    => $users,
+            'projects' => Project::select('id', 'name')->orderBy('name')->get(),
+            'users'    => User::select('id', 'name')->orderBy('name')->get(),
         ]);
     }
 
@@ -53,7 +52,13 @@ class TaskController extends Controller
             'status'      => 'required|in:pending,in_progress,review,completed,blocked',
         ]);
 
-        Task::create($validated);
+        $task = Task::create($validated);
+        $task->load(['project', 'assignee']);
+
+        // Notify assignee
+        if ($task->assigned_to && $task->assigned_to !== auth()->id()) {
+            $task->assignee->notify(new TaskAssigned($task));
+        }
 
         return redirect()->route('tasks.index')
             ->with('success', 'Task created successfully.');
@@ -74,13 +79,10 @@ class TaskController extends Controller
     {
         $this->authorize('update', $task);
 
-        $projects = Project::select('id', 'name')->orderBy('name')->get();
-        $users    = User::select('id', 'name')->orderBy('name')->get();
-
         return Inertia::render('Tasks/Edit', [
             'task'     => $task,
-            'projects' => $projects,
-            'users'    => $users,
+            'projects' => Project::select('id', 'name')->orderBy('name')->get(),
+            'users'    => User::select('id', 'name')->orderBy('name')->get(),
         ]);
     }
 
@@ -98,7 +100,40 @@ class TaskController extends Controller
             'status'      => 'required|in:pending,in_progress,review,completed,blocked',
         ]);
 
+        $oldStatus     = $task->status;
+        $oldAssignedTo = $task->assigned_to;
+
         $task->update($validated);
+        $task->load(['project', 'assignee']);
+
+        // Notify on new assignment
+        if (
+            $task->assigned_to &&
+            $task->assigned_to !== $oldAssignedTo &&
+            $task->assigned_to !== auth()->id()
+        ) {
+            $task->assignee->notify(new TaskAssigned($task));
+        }
+
+        // Notify on status change
+        if ($oldStatus !== $task->status) {
+            $recipients = collect();
+
+            if ($task->assignee && $task->assignee->id !== auth()->id()) {
+                $recipients->push($task->assignee);
+            }
+
+            if ($task->project?->project_manager_id) {
+                $manager = User::find($task->project->project_manager_id);
+                if ($manager && $manager->id !== auth()->id()) {
+                    $recipients->push($manager);
+                }
+            }
+
+            foreach ($recipients->unique('id') as $user) {
+                $user->notify(new TaskStatusChanged($task, $oldStatus, auth()->user()));
+            }
+        }
 
         return redirect()->route('tasks.index')
             ->with('success', 'Task updated successfully.');

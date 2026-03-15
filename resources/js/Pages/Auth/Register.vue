@@ -44,7 +44,7 @@ const features = [
     <div class="min-h-screen bg-slate-950 flex">
 
         <!-- Left Panel - Branding -->
-        <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex-col justify-between p-12">
+        <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-linear-to-br from-slate-900 via-indigo-950 to-slate-900 flex-col justify-between p-12">
 
             <!-- Grid pattern overlay -->
             <div class="absolute inset-0 opacity-10"
@@ -76,7 +76,7 @@ const features = [
                         :key="feature.title"
                         class="flex items-start gap-4"
                     >
-                        <div class="w-10 h-10 bg-indigo-600/20 border border-indigo-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <div class="w-10 h-10 bg-indigo-600/20 border border-indigo-500/20 rounded-xl flex items-center justify-center shrink-0">
                             <component :is="feature.icon" class="w-5 h-5 text-indigo-400" />
                         </div>
                         <div>

@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Expense;
 use App\Models\Project;
+use App\Models\User;
+use App\Notifications\ExpenseApproved;
+use App\Notifications\ExpenseRejected;
+use App\Notifications\ExpenseSubmitted;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -14,7 +18,7 @@ class ExpenseController extends Controller
     {
         $this->authorize('viewAny', Expense::class);
 
-        $expenses = Expense::with(['project', 'approvedBy'])
+        $expenses = Expense::with(['project', 'approvedBy', 'creator'])
             ->latest()
             ->paginate(15);
 
@@ -37,7 +41,18 @@ class ExpenseController extends Controller
             'date'        => 'required|date',
         ]);
 
-        Expense::create($validated);
+        $validated['created_by'] = auth()->id();
+
+        $expense = Expense::create($validated);
+        $expense->load('project');
+
+        // Notify all users with expense approval permission
+        $approvers = User::permission('expenses.approve')->get();
+        foreach ($approvers as $approver) {
+            if ($approver->id !== auth()->id()) {
+                $approver->notify(new ExpenseSubmitted($expense, auth()->user()));
+            }
+        }
 
         return redirect()->back()->with('success', 'Expense created successfully.');
     }
@@ -67,17 +82,29 @@ class ExpenseController extends Controller
             'approved_by' => $request->user()->id,
         ]);
 
+        // Notify the submitter
+        if ($expense->created_by && $expense->created_by !== auth()->id()) {
+            $expense->load('project');
+            $expense->creator->notify(new ExpenseApproved($expense, auth()->user()));
+        }
+
         return redirect()->back()->with('success', 'Expense approved.');
     }
 
     public function reject(Request $request, Expense $expense)
     {
-        $this->authorize('approve', $expense); // same permission gate
+        $this->authorize('approve', $expense);
 
         $expense->update([
             'status'      => 'rejected',
             'approved_by' => $request->user()->id,
         ]);
+
+        // Notify the submitter
+        if ($expense->created_by && $expense->created_by !== auth()->id()) {
+            $expense->load('project');
+            $expense->creator->notify(new ExpenseRejected($expense, auth()->user()));
+        }
 
         return redirect()->back()->with('success', 'Expense rejected.');
     }

@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import { Head, usePage } from '@inertiajs/vue3'
+import { Head, Link, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 import {
     FolderKanban,
@@ -10,17 +10,23 @@ import {
     TrendingUp,
     TrendingDown,
     Clock,
-    AlertTriangle,
     ArrowRight,
-    Users,
     CalendarDays,
     DollarSign,
+    AlertTriangle,
+    Users,
 } from 'lucide-vue-next'
 
 const page = usePage()
 const user = computed(() => page.props.auth.user)
-const roles = computed(() => page.props.auth.roles ?? [])
 
+const props = defineProps({
+    stats:          Object,
+    recentProjects: Array,
+    upcomingTasks:  Array,
+})
+
+// ── Greeting ───────────────────────────────────────────
 const greeting = computed(() => {
     const h = new Date().getHours()
     if (h < 12) return 'Good morning'
@@ -28,28 +34,41 @@ const greeting = computed(() => {
     return 'Good evening'
 })
 
-const stats = [
-    { label: 'Active Projects',  value: '12', change: '+2 this month',      trend: 'up',      icon: FolderKanban },
-    { label: 'Open Tasks',       value: '48', change: '6 due today',         trend: 'neutral', icon: CheckSquare },
-    { label: 'Total Budget',     value: '$4.2M', change: '78% allocated',   trend: 'up',      icon: DollarSign },
-    { label: 'Pending Expenses', value: '17', change: 'Awaiting approval',   trend: 'down',    icon: Receipt },
-]
+// ── Stats cards ────────────────────────────────────────
+const statCards = computed(() => [
+    {
+        label:  'Active Projects',
+        value:  props.stats.activeProjects,
+        change: 'currently running',
+        trend:  'up',
+        icon:   FolderKanban,
+    },
+    {
+        label:  'Open Tasks',
+        value:  props.stats.openTasks,
+        change: props.stats.tasksDueToday > 0
+            ? `${props.stats.tasksDueToday} due today`
+            : 'none due today',
+        trend:  props.stats.tasksDueToday > 0 ? 'down' : 'neutral',
+        icon:   CheckSquare,
+    },
+    {
+        label:  'Total Budget',
+        value:  fmtMoney(props.stats.totalBudget),
+        change: 'across all projects',
+        trend:  'up',
+        icon:   DollarSign,
+    },
+    {
+        label:  'Pending Expenses',
+        value:  props.stats.pendingExpenses,
+        change: 'awaiting approval',
+        trend:  props.stats.pendingExpenses > 0 ? 'down' : 'neutral',
+        icon:   Receipt,
+    },
+])
 
-const recentProjects = [
-    { name: 'Highway Bridge Expansion',    status: 'active',   progress: 75, manager: 'James Carter', due: 'Mar 15, 2026', budget: '$1.2M' },
-    { name: 'Commercial Tower Block A',    status: 'active',   progress: 42, manager: 'Sarah Mills',  due: 'Jun 30, 2026', budget: '$3.1M' },
-    { name: 'Residential Complex Phase 2', status: 'on_hold',  progress: 28, manager: 'David Osei',   due: 'Sep 1, 2026',  budget: '$890K' },
-    { name: 'Airport Terminal Renovation', status: 'planning', progress: 5,  manager: 'Aisha Rahman', due: 'Dec 20, 2026', budget: '$5.4M' },
-]
-
-const recentTasks = [
-    { name: 'Submit structural drawings',  project: 'Highway Bridge',    priority: 'critical', due: 'Today',    assignee: 'JC' },
-    { name: 'Review supplier invoices',    project: 'Tower Block A',     priority: 'high',     due: 'Tomorrow', assignee: 'SM' },
-    { name: 'Concrete pour inspection',    project: 'Residential Ph. 2', priority: 'high',     due: 'Feb 25',   assignee: 'DO' },
-    { name: 'Update resource allocation',  project: 'Airport Terminal',  priority: 'medium',   due: 'Feb 28',   assignee: 'AR' },
-    { name: 'Finalize procurement list',   project: 'Highway Bridge',    priority: 'medium',   due: 'Mar 1',    assignee: 'JC' },
-]
-
+// ── Configs ────────────────────────────────────────────
 const statusConfig = {
     active:    { label: 'Active',    dot: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800' },
     on_hold:   { label: 'On Hold',   dot: 'bg-amber-500',   badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800' },
@@ -65,11 +84,40 @@ const priorityConfig = {
     low:      'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
 }
 
+// ── Helpers ────────────────────────────────────────────
 const progressColor = (p) => {
     if (p >= 75) return 'bg-emerald-500'
     if (p >= 40) return 'bg-indigo-500'
     if (p >= 15) return 'bg-amber-500'
     return 'bg-slate-200 dark:bg-slate-700'
+}
+
+function fmtMoney(v) {
+    if (!v) return '$0'
+    if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`
+    if (v >= 1_000)     return `$${(v / 1_000).toFixed(0)}K`
+    return `$${v}`
+}
+
+const fmtDate = (dateStr) => {
+    if (!dateStr) return '—'
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+const fmtDueDate = (dateStr) => {
+    if (!dateStr) return '—'
+    const date      = new Date(dateStr + 'T00:00:00')
+    const today     = new Date(); today.setHours(0,0,0,0)
+    const tomorrow  = new Date(today); tomorrow.setDate(today.getDate() + 1)
+    if (date.getTime() === today.getTime())    return 'Today'
+    if (date.getTime() === tomorrow.getTime()) return 'Tomorrow'
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+const isOverdue = (dateStr) => {
+    if (!dateStr) return false
+    const today = new Date(); today.setHours(0,0,0,0)
+    return new Date(dateStr + 'T00:00:00') < today
 }
 </script>
 
@@ -100,7 +148,7 @@ const progressColor = (p) => {
             <!-- Stats grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 <div
-                    v-for="stat in stats"
+                    v-for="stat in statCards"
                     :key="stat.label"
                     class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:shadow-md transition-shadow duration-200"
                 >
@@ -133,16 +181,25 @@ const progressColor = (p) => {
                             <FolderKanban class="w-4 h-4 text-slate-400" />
                             <h2 class="font-semibold text-slate-900 dark:text-white text-sm">Recent Projects</h2>
                         </div>
-                        <a href="#" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-medium flex items-center gap-1 transition-colors">
+                        <Link
+                            :href="route('projects.index')"
+                            class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-medium flex items-center gap-1 transition-colors"
+                        >
                             View all <ArrowRight class="w-3 h-3" />
-                        </a>
+                        </Link>
                     </div>
 
-                    <div class="divide-y divide-slate-50 dark:divide-slate-800">
-                        <div
+                    <!-- Empty state -->
+                    <div v-if="!recentProjects.length" class="px-6 py-10 text-center text-sm text-slate-400">
+                        No projects yet.
+                    </div>
+
+                    <div v-else class="divide-y divide-slate-50 dark:divide-slate-800">
+                        <Link
                             v-for="project in recentProjects"
-                            :key="project.name"
-                            class="px-6 py-4 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group"
+                            :key="project.id"
+                            :href="route('projects.show', project.id)"
+                            class="block px-6 py-4 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors group"
                         >
                             <div class="flex items-start justify-between gap-4 mb-3">
                                 <div class="min-w-0">
@@ -150,14 +207,14 @@ const progressColor = (p) => {
                                         {{ project.name }}
                                     </p>
                                     <div class="flex items-center gap-3 mt-1 flex-wrap">
-                                        <span class="text-xs text-slate-400 flex items-center gap-1">
+                                        <span v-if="project.manager" class="text-xs text-slate-400 flex items-center gap-1">
                                             <Users class="w-3 h-3" /> {{ project.manager }}
                                         </span>
-                                        <span class="text-xs text-slate-400 flex items-center gap-1">
-                                            <CalendarDays class="w-3 h-3" /> {{ project.due }}
+                                        <span v-if="project.due" class="text-xs text-slate-400 flex items-center gap-1">
+                                            <CalendarDays class="w-3 h-3" /> {{ fmtDate(project.due) }}
                                         </span>
-                                        <span class="text-xs text-slate-400 flex items-center gap-1">
-                                            <DollarSign class="w-3 h-3" /> {{ project.budget }}
+                                        <span v-if="project.budget" class="text-xs text-slate-400 flex items-center gap-1">
+                                            <DollarSign class="w-3 h-3" /> {{ fmtMoney(project.budget) }}
                                         </span>
                                     </div>
                                 </div>
@@ -179,7 +236,7 @@ const progressColor = (p) => {
                                 </div>
                                 <span class="text-xs font-semibold text-slate-400 w-8 text-right">{{ project.progress }}%</span>
                             </div>
-                        </div>
+                        </Link>
                     </div>
                 </div>
 
@@ -190,20 +247,28 @@ const progressColor = (p) => {
                             <CheckSquare class="w-4 h-4 text-slate-400" />
                             <h2 class="font-semibold text-slate-900 dark:text-white text-sm">Upcoming Tasks</h2>
                         </div>
-                        <a href="#" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-medium flex items-center gap-1 transition-colors">
+                        <Link
+                            :href="route('tasks.index')"
+                            class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-medium flex items-center gap-1 transition-colors"
+                        >
                             View all <ArrowRight class="w-3 h-3" />
-                        </a>
+                        </Link>
                     </div>
 
-                    <div class="divide-y divide-slate-50 dark:divide-slate-800">
+                    <!-- Empty state -->
+                    <div v-if="!upcomingTasks.length" class="px-5 py-10 text-center text-sm text-slate-400">
+                        No upcoming tasks.
+                    </div>
+
+                    <div v-else class="divide-y divide-slate-50 dark:divide-slate-800">
                         <div
-                            v-for="task in recentTasks"
-                            :key="task.name"
-                            class="px-5 py-3.5 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group"
+                            v-for="task in upcomingTasks"
+                            :key="task.id"
+                            class="px-5 py-3.5 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors group"
                         >
                             <div class="flex items-start gap-3">
                                 <div class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-[10px] shrink-0 mt-0.5">
-                                    {{ task.assignee }}
+                                    {{ task.assignee ?? '?' }}
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
@@ -213,11 +278,12 @@ const progressColor = (p) => {
                                 </div>
                             </div>
                             <div class="flex items-center justify-between mt-2 pl-10">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border" :class="priorityConfig[task.priority]">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border capitalize" :class="priorityConfig[task.priority]">
                                     {{ task.priority }}
                                 </span>
-                                <span class="text-[11px] text-slate-400 flex items-center gap-1">
-                                    <Clock class="w-3 h-3" /> {{ task.due }}
+                                <span class="text-[11px] flex items-center gap-1" :class="isOverdue(task.due_date) ? 'text-rose-500 dark:text-rose-400' : 'text-slate-400'">
+                                    <Clock class="w-3 h-3" />
+                                    {{ fmtDueDate(task.due_date) }}
                                 </span>
                             </div>
                         </div>
@@ -228,7 +294,7 @@ const progressColor = (p) => {
             <!-- Bottom row -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-                <!-- Budget overview -->
+                <!-- Budget overview — placeholder until real data wired -->
                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
                     <div class="flex items-center gap-2 mb-4">
                         <DollarSign class="w-4 h-4 text-slate-400" />
@@ -251,7 +317,7 @@ const progressColor = (p) => {
                     </div>
                 </div>
 
-                <!-- Resource alerts -->
+                <!-- Resource alerts — placeholder until real data wired -->
                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
                     <div class="flex items-center gap-2 mb-4">
                         <Package class="w-4 h-4 text-slate-400" />
@@ -279,21 +345,21 @@ const progressColor = (p) => {
                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
                     <h3 class="font-semibold text-slate-900 dark:text-white text-sm mb-4">Quick Actions</h3>
                     <div class="space-y-2">
-                        <a
+                        <Link
                             v-for="action in [
-                                { label: 'New Project',  icon: FolderKanban },
-                                { label: 'Add Task',     icon: CheckSquare  },
-                                { label: 'Log Expense',  icon: Receipt      },
-                                { label: 'Add Resource', icon: Package      },
+                                { label: 'New Project',  icon: FolderKanban, route: 'projects.index' },
+                                { label: 'Add Task',     icon: CheckSquare,  route: 'tasks.index'    },
+                                { label: 'Log Expense',  icon: Receipt,      route: 'expenses.index' },
+                                { label: 'Add Resource', icon: Package,      route: 'resources.index'},
                             ]"
                             :key="action.label"
-                            href="#"
-                            class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer group"
+                            :href="route(action.route)"
+                            class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group"
                         >
                             <component :is="action.icon" class="w-4 h-4 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
                             <span class="text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{{ action.label }}</span>
                             <ArrowRight class="w-3.5 h-3.5 ml-auto text-slate-300 dark:text-slate-600 group-hover:text-indigo-400 transition-colors" />
-                        </a>
+                        </Link>
                     </div>
                 </div>
 

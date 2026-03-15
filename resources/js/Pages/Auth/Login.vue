@@ -29,7 +29,7 @@ const submit = () => {
     <div class="min-h-screen bg-slate-950 flex">
 
         <!-- Left Panel - Branding -->
-        <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex-col justify-between p-12">
+        <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-linear-to-br from-slate-900 via-indigo-950 to-slate-900 flex-col justify-between p-12">
 
             <!-- Grid pattern overlay -->
             <div class="absolute inset-0 opacity-10"
@@ -54,7 +54,7 @@ const submit = () => {
                     <div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
                     <span class="text-white/60 text-xs font-medium">Budget Alert</span>
                 </div>
-                <p class="text-white font-semibold text-sm">$2.4M of $3.1M used</p>
+                <p class="text-white font-semibold text-sm">₦2.4M of ₦3.1M used</p>
                 <p class="text-white/40 text-xs mt-1">12 expenses pending approval</p>
             </div>
 
@@ -180,7 +180,7 @@ const submit = () => {
                         <button
                             type="button"
                             @click="form.remember = !form.remember"
-                            class="w-5 h-5 rounded-md border flex items-center justify-center transition-all flex-shrink-0"
+                            class="w-5 h-5 rounded-md border flex items-center justify-center transition-all shrink-0"
                             :class="form.remember
                                 ? 'bg-indigo-600 border-indigo-600'
                                 : 'bg-slate-800 border-slate-600 hover:border-slate-500'"

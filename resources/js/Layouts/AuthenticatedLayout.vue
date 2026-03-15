@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import { toast } from 'vue-sonner'
+import NotificationBell from '@/Components/NotificationBell.vue'
 import { useDarkMode } from '@/Composables/useDarkMode'
 import {
     HardHat,
@@ -77,7 +78,7 @@ const navGroups = computed(() => [
         label: 'Administration',
         items: [
             { label: 'Users',    route: 'users.index', icon: Users,    show: hasRole('admin') || hasRole('hr') },
-            { label: 'Settings', route: 'dashboard', icon: Settings, show: hasRole('admin') },
+            { label: 'Settings', route: 'settings', icon: Settings, show: true },
         ],
     },
 ])
@@ -341,6 +342,8 @@ const logout = () => {
                 <!-- Right actions -->
                 <div class="flex items-center gap-2 ml-auto">
 
+                    <NotificationBell />
+
                     <!-- Dark mode toggle -->
                     <button
                         @click="toggleDark"
@@ -348,12 +351,6 @@ const logout = () => {
                     >
                         <Sun v-if="isDark" class="w-5 h-5" />
                         <Moon v-else class="w-5 h-5" />
-                    </button>
-
-                    <!-- Notifications -->
-                    <button class="relative p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                        <Bell class="w-5 h-5" />
-                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
                     </button>
 
                     <!-- Divider -->

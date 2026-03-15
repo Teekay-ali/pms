@@ -14,6 +14,7 @@ class Expense extends Model
     protected $fillable = [
         'project_id',
         'approved_by',
+        'created_by',
         'amount',
         'description',
         'date',
@@ -28,6 +29,11 @@ class Expense extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function approvedBy(): BelongsTo

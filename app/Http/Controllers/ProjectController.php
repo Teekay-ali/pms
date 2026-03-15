@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Notifications\AddedToProject;
+use App\Notifications\ProjectCreated;
+use App\Notifications\ProjectStatusChanged;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -29,10 +32,8 @@ class ProjectController extends Controller
     {
         $this->authorize('create', Project::class);
 
-        $users = User::select('id', 'name')->orderBy('name')->get();
-
         return Inertia::render('Projects/Create', [
-            'users' => $users,
+            'users' => User::select('id', 'name')->orderBy('name')->get(),
         ]);
     }
 
@@ -61,6 +62,23 @@ class ProjectController extends Controller
             $project->members()->sync($validated['members']);
         }
 
+        // Notify admins, CEOs, and project managers about new project
+        $recipients = User::role(['admin', 'ceo', 'project_manager'])->get();
+        foreach ($recipients as $user) {
+            if ($user->id !== auth()->id()) {
+                $user->notify(new ProjectCreated($project, auth()->user()));
+            }
+        }
+
+        // Notify added members
+        $memberIds = $validated['members'] ?? [];
+        $members   = User::whereIn('id', $memberIds)->get();
+        foreach ($members as $member) {
+            if ($member->id !== auth()->id()) {
+                $member->notify(new AddedToProject($project, auth()->user()));
+            }
+        }
+
         return redirect()->route('projects.index')
             ->with('success', 'Project created successfully.');
     }
@@ -73,21 +91,21 @@ class ProjectController extends Controller
             'projectManager',
             'creator',
             'members',
-            'tasks' => fn($q) => $q->with('assignee')->orderBy('due_date'),
+            'tasks'    => fn($q) => $q->with('assignee')->orderBy('due_date'),
             'expenses' => fn($q) => $q->with('approvedBy')->orderBy('date', 'desc'),
             'resources',
         ]);
 
         $project->loadCount([
             'tasks',
-            'tasks as completed_tasks_count' => fn($q) => $q->where('status', 'completed'),
+            'tasks as completed_tasks_count'  => fn($q) => $q->where('status', 'completed'),
             'tasks as in_progress_tasks_count' => fn($q) => $q->where('status', 'in_progress'),
-            'tasks as pending_tasks_count' => fn($q) => $q->where('status', 'pending'),
+            'tasks as pending_tasks_count'    => fn($q) => $q->where('status', 'pending'),
         ]);
 
         return Inertia::render('Projects/Show', [
             'project' => $project,
-            'users'   => \App\Models\User::select('id', 'name')->orderBy('name')->get(),
+            'users'   => User::select('id', 'name')->orderBy('name')->get(),
         ]);
     }
 
@@ -96,11 +114,10 @@ class ProjectController extends Controller
         $this->authorize('update', $project);
 
         $project->load('members');
-        $users = User::select('id', 'name')->orderBy('name')->get();
 
         return Inertia::render('Projects/Edit', [
             'project' => $project,
-            'users'   => $users,
+            'users'   => User::select('id', 'name')->orderBy('name')->get(),
         ]);
     }
 
@@ -120,10 +137,36 @@ class ProjectController extends Controller
             'members.*'          => 'exists:users,id',
         ]);
 
+        $oldStatus    = $project->status;
+        $oldMemberIds = $project->members()->pluck('users.id')->toArray();
+
         $project->update($validated);
 
         if (isset($validated['members'])) {
             $project->members()->sync($validated['members']);
+
+            // Notify newly added members only
+            $newMemberIds = array_diff($validated['members'], $oldMemberIds);
+            $newMembers   = User::whereIn('id', $newMemberIds)->get();
+            foreach ($newMembers as $member) {
+                if ($member->id !== auth()->id()) {
+                    $member->notify(new AddedToProject($project, auth()->user()));
+                }
+            }
+        }
+
+        // Notify on status change
+        if ($oldStatus !== $project->status) {
+            $project->load('members');
+            $recipients = $project->members
+                ->merge(User::role(['admin', 'ceo'])->get())
+                ->unique('id');
+
+            foreach ($recipients as $user) {
+                if ($user->id !== auth()->id()) {
+                    $user->notify(new ProjectStatusChanged($project, $oldStatus, auth()->user()));
+                }
+            }
         }
 
         return redirect()->route('projects.index')
