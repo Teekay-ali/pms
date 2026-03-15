@@ -850,7 +850,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm text-slate-700 dark:text-slate-200">
                                         <span class="font-semibold">{{ log.causer?.name ?? 'System' }}</span>
-                                        <span class="text-slate-500 dark:text-slate-400"> {{ log.description }}</span>
+                                        <span class="text-slate-500 dark:text-slate-400 ms-2"> {{ log.description }}</span>
                                     </p>
                                     <p class="text-xs text-slate-400 mt-0.5">
                                         {{ new Date(log.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}

@@ -72,6 +72,7 @@ const typeIcon = (type) => {
         expense_submitted:     '💰',
         expense_approved:      '✅',
         expense_rejected:      '❌',
+        budget_alert:          '⚠️',
     }
     return map[type] ?? '🔔'
 }

@@ -20,6 +20,7 @@ const typeIcon = (type) => {
         expense_submitted:      '💰',
         expense_approved:       '✅',
         expense_rejected:       '❌',
+        budget_alert:           '⚠️',
     }
     return map[type] ?? '🔔'
 }
@@ -30,6 +31,7 @@ const typeColor = (type) => {
         expense_rejected: 'border-l-rose-500',
         expense_approved: 'border-l-emerald-500',
         expense_submitted:'border-l-indigo-500',
+        budget_alert: 'border-l-amber-500',
     }
     return map[type] ?? 'border-l-slate-300 dark:border-l-slate-700'
 }

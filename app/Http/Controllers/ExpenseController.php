@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Notifications\ExpenseApproved;
 use App\Notifications\ExpenseRejected;
 use App\Notifications\ExpenseSubmitted;
+use App\Notifications\BudgetAlert;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -88,6 +89,10 @@ class ExpenseController extends Controller
             $expense->creator->notify(new ExpenseApproved($expense, auth()->user()));
         }
 
+        // Check budget thresholds after approval
+        $expense->load('project');
+        $this->checkBudgetAlerts($expense->project);
+
         return redirect()->back()->with('success', 'Expense approved.');
     }
 
@@ -117,4 +122,37 @@ class ExpenseController extends Controller
 
         return redirect()->back()->with('success', 'Expense deleted.');
     }
+
+    private function checkBudgetAlerts(Project $project): void
+    {
+        if (!$project->budget || $project->budget <= 0) return;
+
+        $spent = $project->expenses()
+            ->where('status', 'approved')
+            ->sum('amount');
+
+        $pct = ($spent / $project->budget) * 100;
+
+        $thresholds = [50, 75, 100];
+
+        foreach ($thresholds as $threshold) {
+            if ($pct >= $threshold) {
+                // Check if we already sent this alert today to avoid spam
+                $alreadySent = \DB::table('notifications')
+                    ->where('type', BudgetAlert::class)
+                    ->whereJsonContains('data->meta->project_id', $project->id)
+                    ->whereJsonContains('data->meta->threshold', $threshold)
+                    ->whereDate('created_at', today())
+                    ->exists();
+
+                if (!$alreadySent) {
+                    $recipients = \App\Models\User::role(['admin', 'ceo', 'project_manager'])->get();
+                    foreach ($recipients as $user) {
+                        $user->notify(new BudgetAlert($project, $threshold, round($spent, 2), round($project->budget, 2)));
+                    }
+                }
+            }
+        }
+    }
+
 }
