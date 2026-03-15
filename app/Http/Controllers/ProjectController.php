@@ -44,6 +44,7 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name'               => 'required|string|max:255',
             'description'        => 'nullable|string',
+            'location'           => 'nullable|string|max:255',
             'start_date'         => 'nullable|date',
             'end_date'           => 'nullable|date|after_or_equal:start_date',
             'budget'             => 'nullable|numeric|min:0',
@@ -92,6 +93,7 @@ class ProjectController extends Controller
             'creator',
             'members',
             'attachments.uploader',
+            'dailyLogs.logger',
             'tasks'    => fn($q) => $q->with('assignee')->orderBy('due_date'),
             'expenses' => fn($q) => $q->with('approvedBy')->orderBy('date', 'desc'),
             'resources',
@@ -104,6 +106,8 @@ class ProjectController extends Controller
             'tasks as in_progress_tasks_count' => fn($q) => $q->where('status', 'in_progress'),
             'tasks as pending_tasks_count'    => fn($q) => $q->where('status', 'pending'),
         ]);
+
+//        dd($project->location);
 
         return Inertia::render('Projects/Show', [
             'project' => $project,
@@ -130,6 +134,7 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name'               => 'required|string|max:255',
             'description'        => 'nullable|string',
+            'location'           => 'nullable|string|max:255',
             'start_date'         => 'nullable|date',
             'end_date'           => 'nullable|date|after_or_equal:start_date',
             'budget'             => 'nullable|numeric|min:0',

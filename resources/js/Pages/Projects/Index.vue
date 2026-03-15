@@ -44,6 +44,7 @@ const editingProject = ref(null)
 const createForm = useForm({
     name: '',
     description: '',
+    location: '',
     start_date: '',
     end_date: '',
     budget: '',
@@ -55,6 +56,7 @@ const createForm = useForm({
 const editForm = useForm({
     name: '',
     description: '',
+    location: '',
     start_date: '',
     end_date: '',
     budget: '',
@@ -121,6 +123,7 @@ const openEdit = (project) => {
     editingProject.value = project
     editForm.name               = project.name
     editForm.description        = project.description ?? ''
+    editForm.location           = project.location ?? ''
     editForm.start_date         = project.start_date?.substring(0, 10) ?? ''
     editForm.end_date           = project.end_date?.substring(0, 10) ?? ''
     editForm.budget             = project.budget ?? ''
@@ -282,7 +285,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                     </span>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="flex items-center gap-2 min-w-[100px]">
+                                <div class="flex items-center gap-2 min-w-25">
                                     <div class="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                         <div class="h-full rounded-full transition-all duration-500" :class="progressColor(progressPct(project))" :style="{ width: progressPct(project) + '%' }"></div>
                                     </div>
@@ -291,7 +294,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                             </td>
                             <td class="px-6 py-4">
                                 <div v-if="project.project_manager" class="flex items-center gap-2">
-                                    <div class="w-7 h-7 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                                    <div class="w-7 h-7 bg-linear-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
                                         {{ initials(project.project_manager.name) }}
                                     </div>
                                     <span class="text-sm text-slate-600 dark:text-slate-300 truncate max-w-[120px]">{{ project.project_manager.name }}</span>
@@ -455,6 +458,16 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                         <p v-if="createForm.errors.description" :class="errorMsgClass">{{ createForm.errors.description }}</p>
                     </div>
 
+                    <div class="sm:col-span-2">
+                        <label :class="labelClass">Location / Address</label>
+                        <input
+                            v-model="createForm.location"
+                            type="text"
+                            placeholder="e.g. 123 Main St, Cape Town"
+                            :class="inputClass"
+                        />
+                    </div>
+
                     <!-- Start date -->
                     <div>
                         <label :class="labelClass">Start Date</label>
@@ -534,6 +547,16 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                         <label :class="labelClass">Description</label>
                         <textarea v-model="editForm.description" rows="3" :class="[inputClass, 'resize-none', editForm.errors.description ? errorClass : '']"></textarea>
                         <p v-if="editForm.errors.description" :class="errorMsgClass">{{ editForm.errors.description }}</p>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label :class="labelClass">Location / Address</label>
+                        <input
+                            v-model="editForm.location"
+                            type="text"
+                            placeholder="e.g. 123 Main St, Cape Town"
+                            :class="inputClass"
+                        />
                     </div>
 
                     <div>

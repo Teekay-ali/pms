@@ -19,6 +19,7 @@ class Project extends Model
     protected $fillable = [
         'name',
         'description',
+        'location',
         'start_date',
         'end_date',
         'budget',
@@ -82,6 +83,11 @@ class Project extends Model
     public function activities()
     {
         return $this->morphMany(Activity::class, 'subject');
+    }
+
+    public function dailyLogs(): HasMany
+    {
+        return $this->hasMany(DailyLog::class)->latest('date');
     }
 
 }

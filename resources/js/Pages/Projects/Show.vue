@@ -8,11 +8,13 @@ import { GGanttChart, GGanttRow } from '@infectoone/vue-ganttastic'
 import {
     Activity,
     ArrowLeft,
+    BookOpen,
     CalendarDays,
     DollarSign,
     BarChart2,
     Users,
     CheckSquare,
+    MapPin,
     Package,
     Receipt,
     Pencil,
@@ -43,6 +45,7 @@ const activeTab = ref('tasks')
 
 const tabs = [
     { key: 'attachments', label: 'Files', icon: Paperclip },
+    { key: 'daily_log', label: 'Daily Log', icon: BookOpen },
     { key: 'tasks',     label: 'Tasks',     icon: CheckSquare },
     { key: 'expenses',  label: 'Expenses',  icon: Receipt },
     { key: 'gantt', label: 'Gantt', icon: BarChart2 },
@@ -345,6 +348,88 @@ const ganttEnd = computed(() => {
     return dates.length ? dates.sort().reverse()[0] + ' 23:59' : new Date().toISOString().substring(0, 10) + ' 23:59'
 })
 
+// ── Daily Log ──────────────────────────────────────────
+const showLogModal    = ref(false)
+const editingLog      = ref(null)
+const fetchingWeather = ref(false)
+
+const logForm = useForm({
+    date:            new Date().toISOString().substring(0, 10),
+    work_performed:  '',
+    workers_on_site: '',
+    equipment_used:  '',
+    delays_issues:   '',
+    weather:         '',
+    temperature:     '',
+})
+
+const openCreateLog = () => {
+    editingLog.value = null
+    logForm.reset()
+    logForm.date = new Date().toISOString().substring(0, 10)
+    showLogModal.value = true
+    fetchWeather()
+}
+
+const openEditLog = (log) => {
+    editingLog.value         = log
+    logForm.date             = log.date?.substring(0, 10) ?? ''
+    logForm.work_performed   = log.work_performed
+    logForm.workers_on_site  = log.workers_on_site
+    logForm.equipment_used   = log.equipment_used ?? ''
+    logForm.delays_issues    = log.delays_issues ?? ''
+    logForm.weather          = log.weather ?? ''
+    logForm.temperature      = log.temperature ?? ''
+    showLogModal.value       = true
+}
+
+const fetchWeather = async () => {
+    if (!props.project.location) return
+    fetchingWeather.value = true
+    try {
+        const res  = await fetch(route('projects.weather', props.project.id))
+        const data = await res.json()
+        if (data.weather) {
+            logForm.weather     = data.weather
+            logForm.temperature = data.temperature
+        }
+    } catch {}
+    fetchingWeather.value = false
+}
+
+const submitLog = () => {
+    if (editingLog.value) {
+        logForm.put(route('daily-logs.update', [props.project.id, editingLog.value.id]), {
+            preserveScroll: true,
+            onSuccess: () => { showLogModal.value = false; logForm.reset() },
+        })
+    } else {
+        logForm.post(route('daily-logs.store', props.project.id), {
+            preserveScroll: true,
+            onSuccess: () => { showLogModal.value = false; logForm.reset() },
+        })
+    }
+}
+
+const deleteLog = (id) => {
+    if (confirm('Delete this daily log?')) {
+        router.delete(route('daily-logs.destroy', [props.project.id, id]), { preserveScroll: true })
+    }
+}
+
+const weatherEmoji = (w) => {
+    if (!w) return '🌤️'
+    const lower = w.toLowerCase()
+    if (lower.includes('rain'))   return '🌧️'
+    if (lower.includes('storm'))  return '⛈️'
+    if (lower.includes('snow'))   return '❄️'
+    if (lower.includes('cloud'))  return '☁️'
+    if (lower.includes('clear'))  return '☀️'
+    if (lower.includes('wind'))   return '💨'
+    if (lower.includes('fog'))    return '🌫️'
+    return '🌤️'
+}
+
 // ── Input classes ──────────────────────────────────────
 const inputClass  = 'w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-300 dark:focus:border-indigo-600 transition-all'
 const errorClass  = '!border-rose-400 dark:!border-rose-600'
@@ -380,6 +465,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                 }"></div>
 
                 <div class="p-6">
+
                     <!-- Title row -->
                     <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
                         <div class="flex-1 min-w-0">
@@ -393,6 +479,12 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                             <p v-if="project.description" class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-2xl">
                                 {{ project.description }}
                             </p>
+
+                            <div v-if="project.location" class="flex items-center gap-1.5 mt-1.5 text-sm text-slate-400 dark:text-slate-500">
+                                <MapPin class="w-3.5 h-3.5 shrink-0" />
+                                <span>{{ project.location }}</span>
+                            </div>
+
                         </div>
 
                         <!-- Actions -->
@@ -497,12 +589,13 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                         >
                             {{
                                 tab.key === 'tasks'     ? project.tasks?.length :
-                                    tab.key === 'expenses'  ? project.expenses?.length :
-                                        tab.key === 'members'   ? project.members?.length :
-                                            tab.key === 'attachments' ? project.attachments?.length :
-                                                tab.key === 'activity' ? project.activities?.length :
-                                                    tab.key === 'gantt'       ? '' :
-                                                        project.resources?.length
+                                    tab.key === 'daily_log' ? project.daily_logs?.length :
+                                        tab.key === 'expenses'  ? project.expenses?.length :
+                                            tab.key === 'members'   ? project.members?.length :
+                                                tab.key === 'attachments' ? project.attachments?.length :
+                                                    tab.key === 'activity' ? project.activities?.length :
+                                                        tab.key === 'gantt'       ? '' :
+                                                            project.resources?.length
                             }}
                         </span>
                     </button>
@@ -568,6 +661,84 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                         >
                                             <Trash2 class="w-3.5 h-3.5" />
                                         </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DAILY LOG TAB -->
+                    <div v-else-if="activeTab === 'daily_log'">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-slate-900 dark:text-white">Daily Log</h3>
+                            <button
+                                v-if="can('projects.update')"
+                                @click="openCreateLog"
+                                class="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-colors"
+                            >
+                                <Plus class="w-3.5 h-3.5" /> New Entry
+                            </button>
+                        </div>
+
+                        <div v-if="!project.daily_logs?.length" class="text-center py-12">
+                            <BookOpen class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">No daily logs yet.</p>
+                            <p class="text-xs text-slate-400 mt-1">Log daily site activity to keep a record of progress.</p>
+                        </div>
+
+                        <div v-else class="space-y-3">
+                            <div
+                                v-for="log in project.daily_logs"
+                                :key="log.id"
+                                class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 group"
+                            >
+                                <!-- Header -->
+                                <div class="flex items-start justify-between gap-3 mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="text-2xl">{{ weatherEmoji(log.weather) }}</div>
+                                        <div>
+                                            <p class="font-semibold text-slate-800 dark:text-slate-100 text-sm">
+                                                {{ new Date(log.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) }}
+                                            </p>
+                                            <div class="flex items-center gap-3 mt-0.5">
+                            <span v-if="log.weather" class="text-xs text-slate-500 dark:text-slate-400">
+                                {{ log.weather }}{{ log.temperature ? ' · ' + log.temperature + '°C' : '' }}
+                            </span>
+                                                <span class="text-xs text-slate-500 dark:text-slate-400">
+                                👷 {{ log.workers_on_site }} workers
+                            </span>
+                                                <span class="text-xs text-slate-400">by {{ log.logger?.name }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                        <button
+                                            v-if="can('projects.update')"
+                                            @click="openEditLog(log)"
+                                            class="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                                        >
+                                            <Pencil class="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                            v-if="can('projects.update')"
+                                            @click="deleteLog(log.id)"
+                                            class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                                        >
+                                            <Trash2 class="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Work performed -->
+                                <p class="text-sm text-slate-700 dark:text-slate-200 mb-2">{{ log.work_performed }}</p>
+
+                                <!-- Equipment & Delays -->
+                                <div class="flex flex-wrap gap-3">
+                                    <div v-if="log.equipment_used" class="text-xs text-slate-500 dark:text-slate-400">
+                                        🔧 {{ log.equipment_used }}
+                                    </div>
+                                    <div v-if="log.delays_issues" class="text-xs text-amber-600 dark:text-amber-400">
+                                        ⚠️ {{ log.delays_issues }}
                                     </div>
                                 </div>
                             </div>
@@ -864,6 +1035,92 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
             </div>
 
         </div>
+
+        <!-- DAILY LOG MODAL -->
+        <Modal
+            :show="showLogModal"
+            :title="editingLog ? 'Edit Daily Log' : 'New Daily Log'"
+            size="lg"
+            @close="showLogModal = false"
+        >
+            <div class="p-6 space-y-5">
+                <!-- Date -->
+                <div>
+                    <label :class="labelClass">Date <span class="text-rose-500">*</span></label>
+                    <input v-model="logForm.date" type="date" :class="inputClass" :disabled="!!editingLog" />
+                </div>
+
+                <!-- Weather row -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label :class="labelClass">
+                            Weather
+                            <span v-if="fetchingWeather" class="text-xs text-indigo-500 ml-1">fetching...</span>
+                            <span v-else-if="project.location" class="text-xs text-slate-400 ml-1">(auto-fetched)</span>
+                            <span v-else class="text-xs text-amber-500 ml-1">(add location to project)</span>
+                        </label>
+                        <input v-model="logForm.weather" type="text" placeholder="e.g. Partly cloudy" :class="inputClass" />
+                    </div>
+                    <div>
+                        <label :class="labelClass">Temperature (°C)</label>
+                        <input v-model="logForm.temperature" type="number" step="0.1" placeholder="e.g. 22.5" :class="inputClass" />
+                    </div>
+                </div>
+
+                <!-- Workers -->
+                <div>
+                    <label :class="labelClass">Workers on Site <span class="text-rose-500">*</span></label>
+                    <input v-model="logForm.workers_on_site" type="number" min="0" placeholder="0" :class="[inputClass, logForm.errors.workers_on_site ? errorClass : '']" />
+                    <p v-if="logForm.errors.workers_on_site" :class="errorMsgClass">{{ logForm.errors.workers_on_site }}</p>
+                </div>
+
+                <!-- Work Performed -->
+                <div>
+                    <label :class="labelClass">Work Performed <span class="text-rose-500">*</span></label>
+                    <textarea
+                        v-model="logForm.work_performed"
+                        rows="3"
+                        placeholder="Describe the work done today..."
+                        :class="[inputClass, 'resize-none', logForm.errors.work_performed ? errorClass : '']"
+                    ></textarea>
+                    <p v-if="logForm.errors.work_performed" :class="errorMsgClass">{{ logForm.errors.work_performed }}</p>
+                </div>
+
+                <!-- Equipment -->
+                <div>
+                    <label :class="labelClass">Equipment Used</label>
+                    <input v-model="logForm.equipment_used" type="text" placeholder="e.g. Excavator, Concrete mixer" :class="inputClass" />
+                </div>
+
+                <!-- Delays -->
+                <div>
+                    <label :class="labelClass">Delays / Issues</label>
+                    <textarea
+                        v-model="logForm.delays_issues"
+                        rows="2"
+                        placeholder="Any delays or issues encountered..."
+                        :class="[inputClass, 'resize-none']"
+                    ></textarea>
+                </div>
+            </div>
+
+            <template #footer>
+                <div class="flex items-center justify-end gap-3">
+                    <button @click="showLogModal = false"
+                            class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                        Cancel
+                    </button>
+                    <button
+                        @click="submitLog"
+                        :disabled="logForm.processing"
+                        class="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
+                    >
+                        <Loader2 v-if="logForm.processing" class="w-4 h-4 animate-spin" />
+                        {{ editingLog ? 'Save Changes' : 'Save Log' }}
+                    </button>
+                </div>
+            </template>
+        </Modal>
 
         <!-- ── TASK MODAL ───────────────────────────────────── -->
         <Modal :show="showTaskModal" :title="editingTask ? 'Edit Task' : 'New Task'" size="lg" @close="showTaskModal = false">

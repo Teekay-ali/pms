@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\DailyLogController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -21,6 +22,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Settings (alias for profile)
     Route::get('/settings', [ProfileController::class, 'edit'])->name('settings');
+
+    // Daily Logs
+    Route::post('/projects/{project}/daily-logs', [DailyLogController::class, 'store'])->name('daily-logs.store');
+    Route::put('/projects/{project}/daily-logs/{dailyLog}', [DailyLogController::class, 'update'])->name('daily-logs.update');
+    Route::delete('/projects/{project}/daily-logs/{dailyLog}', [DailyLogController::class, 'destroy'])->name('daily-logs.destroy');
+    Route::get('/projects/{project}/weather', [DailyLogController::class, 'fetchWeather'])->name('projects.weather');
 
     // Attachments
     Route::post('/attachments/{modelType}/{modelId}', [AttachmentController::class, 'store'])->name('attachments.store');
