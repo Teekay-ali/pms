@@ -105,4 +105,7 @@ class Project extends Model
         return $this->hasMany(ChangeOrder::class);
     }
 
+    public function invoices(): HasMany { return $this->hasMany(Invoice::class); }
+    public function bills(): HasMany    { return $this->hasMany(Bill::class); }
+
 }

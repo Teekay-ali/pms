@@ -123,14 +123,14 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
             <!-- Filters -->
             <div class="flex gap-3 flex-wrap">
                 <select v-model="statusFilter" @change="applyFilters"
-                        class="px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                        class="px-4 py-2.5 bg-white dark:bg-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
                     <option value="approved">Approved</option>
                     <option value="rejected">Rejected</option>
                 </select>
                 <select v-model="typeFilter" @change="applyFilters"
-                        class="px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                        class="px-4 py-2.5 bg-white dark:bg-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
                     <option value="">All Types</option>
                     <option value="annual">Annual</option>
                     <option value="sick">Sick</option>

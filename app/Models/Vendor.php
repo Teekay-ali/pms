@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Vendor extends Model
 {
@@ -37,4 +38,6 @@ class Vendor extends Model
             ->dontSubmitEmptyLogs()
             ->setDescriptionForEvent(fn(string $eventName) => "Project {$eventName}");
     }
+
+    public function bills(): HasMany { return $this->hasMany(Bill::class); }
 }

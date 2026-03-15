@@ -150,15 +150,15 @@ const errorClass    = '!border-rose-400 dark:!border-rose-500'
                 <div class="relative flex-1 min-w-48">
                     <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input v-model="search" @keyup.enter="applyFilters" type="text" placeholder="Search employees..."
-                           class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all" />
+                           class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all" />
                 </div>
                 <select v-model="deptFilter" @change="applyFilters"
-                        class="px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                        class="px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
                     <option value="">All Departments</option>
                     <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
                 </select>
                 <select v-model="statusFilter" @change="applyFilters"
-                        class="px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                        class="px-4 py-2.5 bg-white dark:bg-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
                     <option value="">All Statuses</option>
                     <option value="active">Active</option>
                     <option value="on_leave">On Leave</option>

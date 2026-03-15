@@ -16,6 +16,10 @@ use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VendorController;
+use App\Http\Controllers\Finance\FinanceDashboardController;
+use App\Http\Controllers\Finance\InvoiceController;
+use App\Http\Controllers\Finance\BillController;
+use App\Http\Controllers\Finance\PaymentController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -27,6 +31,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Settings (alias for profile)
     Route::get('/settings', [ProfileController::class, 'edit'])->name('settings');
+
+
+    // Finance
+    Route::prefix('finance')->name('finance.')->group(function () {
+        Route::get('/', FinanceDashboardController::class)->name('dashboard');
+
+        Route::resource('invoices', InvoiceController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::patch('invoices/{invoice}/mark-sent', [InvoiceController::class, 'markSent'])->name('invoices.mark-sent');
+
+        Route::resource('bills', BillController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::patch('bills/{bill}/approve', [BillController::class, 'approve'])->name('bills.approve');
+
+        Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
+        Route::post('payments', [PaymentController::class, 'store'])->name('payments.store');
+        Route::patch('payments/{payment}', [PaymentController::class, 'update'])->name('payments.update');
+        Route::delete('payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
+    });
 
 
     // Discussions

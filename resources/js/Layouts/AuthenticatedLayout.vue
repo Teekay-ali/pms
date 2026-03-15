@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import { toast } from 'vue-sonner'
 import NotificationBell from '@/Components/NotificationBell.vue'
@@ -7,7 +7,8 @@ import { useDarkMode } from '@/Composables/useDarkMode'
 import {
     Activity,
     HardHat,
-    LayoutDashboard,
+    DollarSign,
+    LayoutDashboard, FileText, CreditCard,
     FolderKanban,
     CheckSquare, ClipboardList,
     UserCog, Building2, CalendarClock,
@@ -29,6 +30,21 @@ import {
     Sun,
     Moon,
 } from 'lucide-vue-next'
+
+const navRef = ref(null)
+
+router.on('before', () => {
+    if (navRef.value) {
+        sessionStorage.setItem('sidebar-scroll', navRef.value.scrollTop)
+    }
+})
+
+router.on('navigate', () => {
+    if (navRef.value) {
+        const saved = sessionStorage.getItem('sidebar-scroll')
+        if (saved) navRef.value.scrollTop = parseInt(saved)
+    }
+})
 
 const page = usePage()
 const user = computed(() => page.props.auth.user)
@@ -55,12 +71,77 @@ const sidebarCollapsed = ref(false)
 const mobileOpen = ref(false)
 const userMenuOpen = ref(false)
 
+// Submenu open state — persisted across navigation
+const openMenus = ref(
+    JSON.parse(sessionStorage.getItem('sidebar-open-menus') ?? '{}')
+)
+
+function toggleMenu(label) {
+    openMenus.value[label] = !openMenus.value[label]
+    sessionStorage.setItem('sidebar-open-menus', JSON.stringify(openMenus.value))
+}
+
+function isChildActive(children) {
+    return children?.some(c => c.route && route().current(c.route))
+}
+
+// const navGroups = computed(() => [
+//     {
+//         label: 'Overview',
+//         items: [
+//             { label: 'Dashboard', route: 'dashboard', icon: LayoutDashboard, show: true },
+//             { label: 'Discussions', route: 'discussions.index', icon: MessageSquare, show: true },
+//         ],
+//     },
+//     {
+//         label: 'Project Management',
+//         items: [
+//             { label: 'Projects', route: 'projects.index', icon: FolderKanban, show: can('projects.view') },
+//             { label: 'Tasks',    route: 'tasks.index',    icon: CheckSquare,  show: can('tasks.view') },
+//         ],
+//     },
+//     {
+//         label: 'Operations',
+//         items: [
+//             { label: 'Resources',     route: 'resources.index',     icon: Package,       show: can('resources.view') },
+//             { label: 'Expenses',      route: 'expenses.index',      icon: Receipt,       show: can('expenses.view') },
+//             { label: 'Change Orders', route: 'change-orders.index', icon: ClipboardList, show: can('change_orders.view') },
+//             { label: 'Vendors',       route: 'vendors.index',       icon: Truck,         show: can('vendors.view') },
+//         ],
+//     },
+//     {
+//         label: 'Finance',
+//         items: [
+//             { label: 'Finance',   route: 'finance.dashboard',       icon: DollarSign, show: can('finance.view') },
+//             { label: 'Invoices',  route: 'finance.invoices.index',  icon: FileText,   show: can('finance.view') },
+//             { label: 'Bills',     route: 'finance.bills.index',     icon: Receipt,    show: can('finance.view') },
+//             { label: 'Payments',  route: 'finance.payments.index',  icon: CreditCard, show: can('finance.payments.manage') },
+//         ],
+//     },
+//     {
+//         label: 'Human Resources',
+//         items: [
+//             { label: 'Employees',    route: 'hr.employees.index',   icon: UserCog,       show: hasRole('admin') || hasRole('hr') || hasRole('ceo') },
+//             { label: 'Departments',  route: 'hr.departments.index', icon: Building2,     show: hasRole('admin') || hasRole('hr') || hasRole('ceo') },
+//             { label: 'Leave',        route: 'hr.leave.index',       icon: CalendarClock, show: hasRole('admin') || hasRole('hr') || hasRole('ceo') },
+//         ],
+//     },
+//     {
+//         label: 'Administration',
+//         items: [
+//             { label: 'Users',    route: 'users.index', icon: Users,    show: hasRole('admin') || hasRole('hr') },
+//             { label: 'Settings', route: 'settings', icon: Settings, show: true },
+//             { label: 'Activity Log', route: 'activity.index', icon: Activity, show: hasRole('admin') || hasRole('ceo') || hasRole('project_manager') },
+//         ],
+//     },
+// ])
+
 const navGroups = computed(() => [
     {
         label: 'Overview',
         items: [
-            { label: 'Dashboard', route: 'dashboard', icon: LayoutDashboard, show: true },
-            { label: 'Discussions', route: 'discussions.index', icon: MessageSquare, show: true },
+            { label: 'Dashboard',   route: 'dashboard',       icon: LayoutDashboard, show: true },
+            { label: 'Discussions', route: 'discussions.index', icon: MessageSquare,  show: true },
         ],
     },
     {
@@ -80,19 +161,38 @@ const navGroups = computed(() => [
         ],
     },
     {
+        label: 'Finance',
+        items: [
+            {
+                label: 'Finance', icon: DollarSign, show: can('finance.view'),
+                children: [
+                    { label: 'Overview', route: 'finance.dashboard',      icon: LayoutDashboard, show: can('finance.view') },
+                    { label: 'Invoices', route: 'finance.invoices.index', icon: FileText,        show: can('finance.view') },
+                    { label: 'Bills',    route: 'finance.bills.index',    icon: Receipt,         show: can('finance.view') },
+                    { label: 'Payments', route: 'finance.payments.index', icon: CreditCard,      show: can('finance.payments.manage') },
+                ],
+            },
+        ],
+    },
+    {
         label: 'Administration',
         items: [
-            { label: 'Users',    route: 'users.index', icon: Users,    show: hasRole('admin') || hasRole('hr') },
-            { label: 'Settings', route: 'settings', icon: Settings, show: true },
+            { label: 'Users',        route: 'users.index',    icon: Users,    show: hasRole('admin') || hasRole('hr') },
+            { label: 'Settings',     route: 'settings',       icon: Settings, show: true },
             { label: 'Activity Log', route: 'activity.index', icon: Activity, show: hasRole('admin') || hasRole('ceo') || hasRole('project_manager') },
         ],
     },
     {
         label: 'Human Resources',
         items: [
-            { label: 'Employees',    route: 'hr.employees.index',   icon: UserCog,       show: hasRole('admin') || hasRole('hr') || hasRole('ceo') },
-            { label: 'Departments',  route: 'hr.departments.index', icon: Building2,     show: hasRole('admin') || hasRole('hr') || hasRole('ceo') },
-            { label: 'Leave',        route: 'hr.leave.index',       icon: CalendarClock, show: hasRole('admin') || hasRole('hr') || hasRole('ceo') },
+            {
+                label: 'HR', icon: UserCog, show: hasRole('admin') || hasRole('hr') || hasRole('ceo'),
+                children: [
+                    { label: 'Employees',   route: 'hr.employees.index',   icon: UserCog,       show: hasRole('admin') || hasRole('hr') || hasRole('ceo') },
+                    { label: 'Departments', route: 'hr.departments.index', icon: Building2,     show: hasRole('admin') || hasRole('hr') || hasRole('ceo') },
+                    { label: 'Leave',       route: 'hr.leave.index',       icon: CalendarClock, show: hasRole('admin') || hasRole('hr') || hasRole('ceo') },
+                ],
+            },
         ],
     },
 ])
@@ -179,7 +279,7 @@ const logout = () => {
             </div>
 
             <!-- Navigation -->
-            <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-5 scrollbar-none">
+            <nav ref="navRef" class="flex-1 overflow-y-auto py-4 px-3 space-y-5 scrollbar-none">
                 <template v-for="group in visibleGroups" :key="group.label">
                     <div>
                         <Transition
@@ -198,53 +298,119 @@ const logout = () => {
                         </Transition>
 
                         <div class="space-y-0.5">
-                            <Link
-                                v-for="item in group.items"
-                                :key="item.label"
-                                :href="route(item.route)"
-                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group relative"
-                                :class="isActive(item.route)
-                                    ? 'bg-indigo-600/20 text-white'
-                                    : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'"
-                            >
-                                <div
-                                    v-if="isActive(item.route)"
-                                    class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-indigo-400 rounded-full"
-                                ></div>
-                                <div
-                                    class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-150"
-                                    :class="isActive(item.route)
-                                        ? 'bg-indigo-600 shadow-lg shadow-indigo-500/30'
-                                        : 'bg-white/5 group-hover:bg-white/10'"
-                                >
-                                    <component
-                                        :is="item.icon"
-                                        class="w-4 h-4"
-                                        :class="isActive(item.route) ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'"
-                                    />
-                                </div>
-                                <Transition
-                                    enter-active-class="transition-all duration-200"
-                                    enter-from-class="opacity-0"
-                                    enter-to-class="opacity-100"
-                                    leave-active-class="transition-all duration-100"
-                                    leave-from-class="opacity-100"
-                                    leave-to-class="opacity-0"
-                                >
-                                    <span v-if="!sidebarCollapsed" class="text-sm font-medium whitespace-nowrap">
-                                        {{ item.label }}
-                                    </span>
-                                </Transition>
+                            <template v-for="item in group.items" :key="item.label">
 
-                                <!-- Tooltip -->
-                                <div
-                                    v-if="sidebarCollapsed"
-                                    class="absolute left-full ml-3 px-2.5 py-1.5 bg-slate-800 border border-slate-700 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl"
-                                >
+                                <!-- ── Submenu parent ── -->
+                                <template v-if="item.children?.length">
+                                    <button
+                                        @click="toggleMenu(item.label)"
+                                        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group relative"
+                                        :class="isChildActive(item.children)
+                                ? 'bg-indigo-600/20 text-white'
+                                : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'"
+                                    >
+                                        <div v-if="isChildActive(item.children)"
+                                             class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-indigo-400 rounded-full">
+                                        </div>
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-150"
+                                             :class="isChildActive(item.children)
+                                    ? 'bg-indigo-600 shadow-lg shadow-indigo-500/30'
+                                    : 'bg-white/5 group-hover:bg-white/10'">
+                                            <component :is="item.icon" class="w-4 h-4"
+                                                       :class="isChildActive(item.children) ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'" />
+                                        </div>
+                                        <Transition
+                                            enter-active-class="transition-all duration-200"
+                                            enter-from-class="opacity-0"
+                                            enter-to-class="opacity-100"
+                                            leave-active-class="transition-all duration-100"
+                                            leave-from-class="opacity-100"
+                                            leave-to-class="opacity-0"
+                                        >
+                                <span v-if="!sidebarCollapsed" class="flex-1 text-left text-sm font-medium whitespace-nowrap">
                                     {{ item.label }}
-                                    <div class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-800 border-l border-b border-slate-700 rotate-45"></div>
-                                </div>
-                            </Link>
+                                </span>
+                                        </Transition>
+                                        <ChevronDown
+                                            v-if="!sidebarCollapsed"
+                                            class="w-3.5 h-3.5 shrink-0 transition-transform duration-200 text-slate-500"
+                                            :class="openMenus[item.label] ? 'rotate-180' : ''"
+                                        />
+                                        <!-- Collapsed tooltip -->
+                                        <div v-if="sidebarCollapsed"
+                                             class="absolute left-full ml-3 px-2.5 py-1.5 bg-slate-800 border border-slate-700 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl">
+                                            {{ item.label }}
+                                            <div class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-800 border-l border-b border-slate-700 rotate-45"></div>
+                                        </div>
+                                    </button>
+
+                                    <!-- Children -->
+                                    <Transition
+                                        enter-active-class="transition-all duration-200 overflow-hidden"
+                                        enter-from-class="opacity-0 max-h-0"
+                                        enter-to-class="opacity-100 max-h-96"
+                                        leave-active-class="transition-all duration-150 overflow-hidden"
+                                        leave-from-class="opacity-100 max-h-96"
+                                        leave-to-class="opacity-0 max-h-0"
+                                    >
+                                        <div v-if="openMenus[item.label] && !sidebarCollapsed" class="mt-0.5 ml-4 pl-3 border-l border-white/10 space-y-0.5">
+                                            <Link
+                                                v-for="child in item.children.filter(c => c.show)"
+                                                :key="child.label"
+                                                :href="route(child.route)"
+                                                class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 group relative text-sm"
+                                                :class="isActive(child.route)
+                                        ? 'bg-indigo-600/20 text-white'
+                                        : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'"
+                                            >
+                                                <component :is="child.icon" class="w-3.5 h-3.5 shrink-0"
+                                                           :class="isActive(child.route) ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'" />
+                                                <span class="font-medium whitespace-nowrap">{{ child.label }}</span>
+                                            </Link>
+                                        </div>
+                                    </Transition>
+                                </template>
+
+                                <!-- ── Regular flat link ── -->
+                                <Link
+                                    v-else
+                                    :href="route(item.route)"
+                                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group relative"
+                                    :class="isActive(item.route)
+                            ? 'bg-indigo-600/20 text-white'
+                            : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'"
+                                >
+                                    <div v-if="isActive(item.route)"
+                                         class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-indigo-400 rounded-full">
+                                    </div>
+                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-150"
+                                         :class="isActive(item.route)
+                                ? 'bg-indigo-600 shadow-lg shadow-indigo-500/30'
+                                : 'bg-white/5 group-hover:bg-white/10'">
+                                        <component :is="item.icon" class="w-4 h-4"
+                                                   :class="isActive(item.route) ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'" />
+                                    </div>
+                                    <Transition
+                                        enter-active-class="transition-all duration-200"
+                                        enter-from-class="opacity-0"
+                                        enter-to-class="opacity-100"
+                                        leave-active-class="transition-all duration-100"
+                                        leave-from-class="opacity-100"
+                                        leave-to-class="opacity-0"
+                                    >
+                            <span v-if="!sidebarCollapsed" class="text-sm font-medium whitespace-nowrap">
+                                {{ item.label }}
+                            </span>
+                                    </Transition>
+                                    <!-- Tooltip when collapsed -->
+                                    <div v-if="sidebarCollapsed"
+                                         class="absolute left-full ml-3 px-2.5 py-1.5 bg-slate-800 border border-slate-700 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl">
+                                        {{ item.label }}
+                                        <div class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-800 border-l border-b border-slate-700 rotate-45"></div>
+                                    </div>
+                                </Link>
+
+                            </template>
                         </div>
                     </div>
                 </template>

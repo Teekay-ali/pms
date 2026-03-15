@@ -23,6 +23,14 @@ class RolesAndPermissionsSeeder extends Seeder
             'projects.delete',
             'projects.assign',
 
+            // Finance
+            'finance.view',
+            'finance.invoices.create',
+            'finance.invoices.manage',
+            'finance.bills.create',
+            'finance.bills.manage',
+            'finance.payments.manage',
+
             // Tasks
             'tasks.view',
             'tasks.create',
@@ -97,6 +105,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'reports.export',
                 'change_orders.view',
                 'change_orders.approve',
+                'finance.view',
             ],
 
             'finance' => [
@@ -111,6 +120,12 @@ class RolesAndPermissionsSeeder extends Seeder
                 'reports.export',
                 'change_orders.view',
                 'change_orders.approve',
+                'finance.view',
+                'finance.invoices.create',
+                'finance.invoices.manage',
+                'finance.bills.create',
+                'finance.bills.manage',
+                'finance.payments.manage',
             ],
 
             'accountant' => [
@@ -122,6 +137,10 @@ class RolesAndPermissionsSeeder extends Seeder
                 'reports.view',
                 'reports.export',
                 'change_orders.view',
+                'finance.view',
+                'finance.invoices.create',
+                'finance.bills.create',
+                'finance.payments.manage',
             ],
 
             'architect' => [
@@ -154,6 +173,9 @@ class RolesAndPermissionsSeeder extends Seeder
                 'change_orders.update',
                 'change_orders.delete',
                 'change_orders.approve',
+                'finance.view',
+                'finance.invoices.create',
+                'finance.bills.create',
             ],
 
             'hr' => [
