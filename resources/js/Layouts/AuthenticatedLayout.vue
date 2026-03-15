@@ -9,7 +9,7 @@ import {
     HardHat,
     LayoutDashboard,
     FolderKanban,
-    CheckSquare,
+    CheckSquare, ClipboardList,
     UserCog, Building2, CalendarClock,
     Package,
     Receipt,
@@ -73,9 +73,10 @@ const navGroups = computed(() => [
     {
         label: 'Operations',
         items: [
-            { label: 'Resources', route: 'resources.index', icon: Package,  show: can('resources.view') },
-            { label: 'Expenses',  route: 'expenses.index',  icon: Receipt,  show: can('expenses.view') },
-            { label: 'Vendors',   route: 'vendors.index',   icon: Truck,    show: can('vendors.view') },
+            { label: 'Resources',     route: 'resources.index',     icon: Package,       show: can('resources.view') },
+            { label: 'Expenses',      route: 'expenses.index',      icon: Receipt,       show: can('expenses.view') },
+            { label: 'Change Orders', route: 'change-orders.index', icon: ClipboardList, show: can('change_orders.view') },
+            { label: 'Vendors',       route: 'vendors.index',       icon: Truck,         show: can('vendors.view') },
         ],
     },
     {

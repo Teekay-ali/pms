@@ -61,6 +61,13 @@ class RolesAndPermissionsSeeder extends Seeder
             'users.delete',
             'roles.assign',
 
+            // Change Orders
+            'change_orders.view',
+            'change_orders.create',
+            'change_orders.update',
+            'change_orders.delete',
+            'change_orders.approve',
+
             // Reports
             'reports.view',
             'reports.export',
@@ -88,6 +95,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'users.view',
                 'reports.view',
                 'reports.export',
+                'change_orders.view',
+                'change_orders.approve',
             ],
 
             'finance' => [
@@ -100,6 +109,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'expenses.approve',
                 'reports.view',
                 'reports.export',
+                'change_orders.view',
+                'change_orders.approve',
             ],
 
             'accountant' => [
@@ -110,6 +121,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'expenses.update',
                 'reports.view',
                 'reports.export',
+                'change_orders.view',
             ],
 
             'architect' => [
@@ -117,6 +129,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'tasks.view',
                 'tasks.update',
                 'resources.view',
+                'change_orders.view',
             ],
 
             'project_manager' => [
@@ -136,6 +149,11 @@ class RolesAndPermissionsSeeder extends Seeder
                 'resources.update',
                 'vendors.view',
                 'reports.view',
+                'change_orders.view',
+                'change_orders.create',
+                'change_orders.update',
+                'change_orders.delete',
+                'change_orders.approve',
             ],
 
             'hr' => [

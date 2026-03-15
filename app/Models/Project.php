@@ -100,4 +100,9 @@ class Project extends Model
         return $this->hasMany(Discussion::class)->latest();
     }
 
+    public function changeOrders(): HasMany
+    {
+        return $this->hasMany(ChangeOrder::class);
+    }
+
 }

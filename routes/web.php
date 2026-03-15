@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\ChangeOrderController;
 use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\DailyLogController;
 use App\Http\Controllers\HR\DepartmentController;
@@ -81,6 +82,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('expenses', ExpenseController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::patch('/expenses/{expense}/approve', [ExpenseController::class, 'approve'])->name('expenses.approve');
     Route::patch('/expenses/{expense}/reject',  [ExpenseController::class, 'reject'])->name('expenses.reject');
+
+    // Change Orders
+    Route::resource('change-orders', ChangeOrderController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::patch('/change-orders/{changeOrder}/approve', [ChangeOrderController::class, 'approve'])->name('change-orders.approve');
+    Route::patch('/change-orders/{changeOrder}/reject',  [ChangeOrderController::class, 'reject'])->name('change-orders.reject');
 
     // Vendors
     Route::resource('vendors', VendorController::class)->only(['index', 'store', 'update', 'destroy']);
