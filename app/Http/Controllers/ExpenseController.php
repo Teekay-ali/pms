@@ -18,7 +18,7 @@ class ExpenseController extends Controller
     {
         $this->authorize('viewAny', Expense::class);
 
-        $expenses = Expense::with(['project', 'approvedBy', 'creator'])
+        $expenses = Expense::with(['project', 'approvedBy', 'creator', 'attachments.uploader'])
             ->latest()
             ->paginate(15);
 

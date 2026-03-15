@@ -61,4 +61,10 @@ class Project extends Model
     {
         return $this->hasMany(Resource::class);
     }
+
+    public function attachments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable')->latest();
+    }
+
 }

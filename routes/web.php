@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -18,6 +19,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Settings (alias for profile)
     Route::get('/settings', [ProfileController::class, 'edit'])->name('settings');
+
+    // Attachments
+    Route::post('/attachments/{modelType}/{modelId}', [AttachmentController::class, 'store'])->name('attachments.store');
+    Route::delete('/attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
+    Route::get('/attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Modal from '@/Components/Modal.vue'
+import AttachmentUploader from '@/Components/AttachmentUploader.vue'
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 import {
@@ -17,6 +18,7 @@ import {
     Loader2,
     Clock,
     AlertTriangle,
+    Paperclip,
     ChevronRight,
     FolderKanban,
     Shield,
@@ -35,6 +37,7 @@ const can = (p) => permissions.value.includes(p)
 const activeTab = ref('tasks')
 
 const tabs = [
+    { key: 'attachments', label: 'Files', icon: Paperclip },
     { key: 'tasks',     label: 'Tasks',     icon: CheckSquare },
     { key: 'expenses',  label: 'Expenses',  icon: Receipt },
     { key: 'members',   label: 'Members',   icon: Users },
@@ -514,6 +517,20 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- ATTACHMENTS TAB -->
+                    <div v-else-if="activeTab === 'attachments'">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-slate-900 dark:text-white">Files & Attachments</h3>
+                        </div>
+                        <AttachmentUploader
+                            model-type="projects"
+                            :model-id="project.id"
+                            :attachments="project.attachments ?? []"
+                            :can-upload="can('projects.update')"
+                            :can-delete="can('projects.delete')"
+                        />
                     </div>
 
                     <!-- EXPENSES TAB -->

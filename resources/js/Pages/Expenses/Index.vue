@@ -19,6 +19,7 @@ import {
     FolderKanban,
     UserCircle,
 } from 'lucide-vue-next'
+import AttachmentUploader from "@/Components/AttachmentUploader.vue";
 
 const props = defineProps({
     expenses: Object,
@@ -427,6 +428,20 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                         />
                         <p v-if="form.errors.date" :class="errorMsgClass">{{ form.errors.date }}</p>
                     </div>
+                </div>
+
+                <!-- Attachments (receipts) — edit mode only -->
+                <div v-if="editingExpense">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Receipts & Documents
+                    </label>
+                    <AttachmentUploader
+                        model-type="expenses"
+                        :model-id="editingExpense.id"
+                        :attachments="editingExpense.attachments ?? []"
+                        :can-upload="can('expenses.update')"
+                        :can-delete="false"
+                    />
                 </div>
 
                 <div class="flex justify-end gap-3 pt-2">

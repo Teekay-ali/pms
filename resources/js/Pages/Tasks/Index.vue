@@ -18,6 +18,7 @@ import {
     ChevronLeft,
     ChevronRight,
 } from 'lucide-vue-next'
+import AttachmentUploader from "@/Components/AttachmentUploader.vue";
 
 const props = defineProps({
     tasks:    Object,
@@ -402,6 +403,20 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                             <option value="completed">Completed</option>
                             <option value="blocked">Blocked</option>
                         </select>
+                    </div>
+
+                    <!-- Attachments section inside task modal (edit mode only) -->
+                    <div v-if="editingTask">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Attachments
+                        </label>
+                        <AttachmentUploader
+                            model-type="tasks"
+                            :model-id="editingTask.id"
+                            :attachments="editingTask.attachments ?? []"
+                            :can-upload="can('tasks.update')"
+                            :can-delete="false"
+                        />
                     </div>
 
                 </div>

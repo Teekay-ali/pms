@@ -17,7 +17,7 @@ class TaskController extends Controller
     {
         $this->authorize('viewAny', Task::class);
 
-        $tasks = Task::with(['project', 'assignee'])
+        $tasks = Task::with(['project', 'assignee', 'attachments.uploader'])
             ->latest()
             ->paginate(15);
 

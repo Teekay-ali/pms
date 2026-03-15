@@ -91,6 +91,7 @@ class ProjectController extends Controller
             'projectManager',
             'creator',
             'members',
+            'attachments.uploader',
             'tasks'    => fn($q) => $q->with('assignee')->orderBy('due_date'),
             'expenses' => fn($q) => $q->with('approvedBy')->orderBy('date', 'desc'),
             'resources',
