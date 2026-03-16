@@ -293,7 +293,7 @@ const { current_page, last_page, prev_page_url, next_page_url } = computed(() =>
         </div>
 
         <!-- Create / Edit Invoice Modal -->
-        <Modal :show="showForm" @close="showForm = false" max-width="3xl">
+        <Modal :show="showForm" @close="showForm = false" size="xl">
             <div class="p-6 space-y-5 max-h-[85vh] overflow-y-auto">
                 <h2 class="text-lg font-semibold text-slate-800 dark:text-white">
                     {{ editingInv ? 'Edit Invoice' : 'New Invoice' }}
@@ -408,7 +408,7 @@ const { current_page, last_page, prev_page_url, next_page_url } = computed(() =>
         </Modal>
 
         <!-- Record Payment Modal -->
-        <Modal :show="showPayment" @close="showPayment = false" max-width="md">
+        <Modal :show="showPayment" @close="showPayment = false" size="xl">
             <div class="p-6 space-y-4">
                 <div>
                     <h2 class="text-lg font-semibold text-slate-800 dark:text-white">Record Payment</h2>

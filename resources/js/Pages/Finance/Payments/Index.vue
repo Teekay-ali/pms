@@ -249,7 +249,7 @@ const fmtDate  = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: '2-di
         </div>
 
         <!-- Edit Payment Modal -->
-        <Modal :show="showEdit" @close="showEdit = false" max-width="md">
+        <Modal :show="showEdit" @close="showEdit = false" size="md">
             <div class="p-6 space-y-4">
                 <h2 class="text-lg font-semibold text-slate-800 dark:text-white">Edit Payment</h2>
 

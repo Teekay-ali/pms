@@ -288,7 +288,7 @@ const fmtDate  = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: '2-di
         </div>
 
         <!-- Create / Edit Bill Modal -->
-        <Modal :show="showForm" @close="showForm = false" max-width="2xl">
+        <Modal :show="showForm" @close="showForm = false" size="2xl">
             <div class="p-6 space-y-5">
                 <h2 class="text-lg font-semibold text-slate-800 dark:text-white">
                     {{ editingBill ? 'Edit Bill' : 'New Bill' }}
@@ -355,7 +355,7 @@ const fmtDate  = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: '2-di
         </Modal>
 
         <!-- Record Payment Modal -->
-        <Modal :show="showPayment" @close="showPayment = false" max-width="md">
+        <Modal :show="showPayment" @close="showPayment = false" size="md">
             <div class="p-6 space-y-4">
                 <div>
                     <h2 class="text-lg font-semibold text-slate-800 dark:text-white">Record Payment</h2>

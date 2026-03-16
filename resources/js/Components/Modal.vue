@@ -14,6 +14,7 @@ const props = defineProps({
     size: {
         type: String,
         default: 'md', // sm, md, lg, xl, 2xl
+        validator: (v) => ['sm', 'md', 'lg', 'xl', '2xl', '3xl'].includes(v),
     },
 })
 
@@ -22,11 +23,12 @@ const emit = defineEmits(['close'])
 const close = () => emit('close')
 
 const sizeClasses = {
-    sm:  'max-w-md',
-    md:  'max-w-lg',
-    lg:  'max-w-2xl',
-    xl:  'max-w-4xl',
-    '2xl': 'max-w-6xl',
+    sm:    'max-w-md',
+    md:    'max-w-lg',
+    lg:    'max-w-2xl',
+    xl:    'max-w-4xl',
+    '2xl': 'max-w-5xl',
+    '3xl': 'max-w-6xl',
 }
 
 const handleKeydown = (e) => {

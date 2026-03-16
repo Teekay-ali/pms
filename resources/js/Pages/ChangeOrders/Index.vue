@@ -351,7 +351,7 @@ function formatCurrency(val) {
         </Modal>
 
         <!-- Reject Modal -->
-        <Modal :show="showReject" @close="showReject = false" max-width="md">
+        <Modal :show="showReject" @close="showReject = false" size="md">
             <div class="p-6 space-y-4">
                 <h2 class="text-lg font-semibold text-slate-800 dark:text-white">Reject Change Order</h2>
                 <p class="text-sm text-slate-500 dark:text-slate-400">Optionally provide a reason for rejection.</p>
