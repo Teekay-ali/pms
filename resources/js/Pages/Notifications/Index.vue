@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Head, router, usePage } from '@inertiajs/vue3'
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Bell, Check, CheckCheck, Trash2, Trash } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -64,9 +65,10 @@ const unread = computed(() => items.value.filter(n => !n.read_at).length)
 </script>
 
 <template>
-    <Head title="Notifications" />
+    <AuthenticatedLayout>
+        <Head title="Notifications" />
 
-    <div class="max-w-3xl mx-auto px-4 py-8">
+        <div class="max-w-3xl mx-auto">
 
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
@@ -180,5 +182,6 @@ const unread = computed(() => items.value.filter(n => !n.read_at).length)
             </button>
         </div>
 
-    </div>
+        </div>
+    </AuthenticatedLayout>
 </template>

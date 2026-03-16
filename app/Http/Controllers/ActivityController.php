@@ -10,9 +10,11 @@ class ActivityController extends Controller
 {
     public function index(): Response
     {
-        if (!auth()->user()->hasRole(['admin', 'ceo', 'project_manager'])) {
-            abort(403);
-        }
+        // Consistent with the rest of the app
+        abort_if(
+            !auth()->user()->hasRole(['admin', 'ceo', 'project_manager']),
+            403
+        );
 
         $activities = Activity::with('causer')
             ->latest()

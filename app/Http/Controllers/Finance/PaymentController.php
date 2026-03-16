@@ -15,7 +15,7 @@ class PaymentController extends Controller
 
     public function index()
     {
-        $this->authorize('create', Payment::class); // reuse — anyone who can manage payments can view
+        $this->authorize('viewAny', Payment::class); // reuse — anyone who can manage payments can view
 
         $payments = Payment::with(['creator', 'payable'])
             ->latest()

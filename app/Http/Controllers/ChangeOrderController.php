@@ -78,18 +78,20 @@ class ChangeOrderController extends Controller
     {
         $this->authorize('approve', $changeOrder);
 
-        if ($changeOrder->status !== 'submitted') {
-            return redirect()->back()->with('error', 'Only submitted change orders can be approved.');
-        }
+        \DB::transaction(function () use ($changeOrder) {
+            $changeOrder = ChangeOrder::lockForUpdate()->findOrFail($changeOrder->id);
 
-        // Auto-update project budget
-        $changeOrder->project->increment('budget', $changeOrder->cost_impact);
+            if ($changeOrder->status !== 'submitted') {
+                abort(422, 'Only submitted change orders can be approved.');
+            }
 
-        $changeOrder->update([
-            'status' => 'approved',
-            'approved_by' => auth()->id(),
-            'approved_at' => now(),
-        ]);
+            $changeOrder->project->increment('budget', $changeOrder->cost_impact);
+            $changeOrder->update([
+                'status' => 'approved',
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+            ]);
+        });
 
         return redirect()->back()->with('success', 'Change order approved and budget updated.');
     }

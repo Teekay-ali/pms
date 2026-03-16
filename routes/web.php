@@ -90,7 +90,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
     Route::delete('/notifications', [NotificationController::class, 'destroyAll'])->name('notifications.destroy-all');
-    Route::get('/notifications/poll', [NotificationController::class, 'poll'])->name('notifications.poll');
+    Route::get('/notifications/poll', [NotificationController::class, 'poll'])
+        ->name('notifications.poll')
+        ->middleware('throttle:30,1'); // max 30 per minute per user
 
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 

@@ -149,6 +149,8 @@ class DiscussionController extends Controller
     // ── Reactions ──────────────────────────────────────
     public function react(Request $request, string $type, int $id)
     {
+        abort_unless(in_array($type, ['discussion', 'reply']), 404);
+
         $model = $type === 'discussion'
             ? Discussion::findOrFail($id)
             : DiscussionReply::findOrFail($id);

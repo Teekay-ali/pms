@@ -68,6 +68,12 @@ class LeaveController extends Controller
     {
         $this->authorizeHR();
 
+        abort_if($leave->status !== 'pending', 403, 'Only pending requests can be approved.');
+
+        if ($leave->type === 'annual') {
+            abort_if($leave->employee->annual_leave_balance < $leave->days, 422, 'Insufficient annual leave balance.');
+        }
+
         $leave->update([
             'status'      => 'approved',
             'approved_by' => auth()->id(),
