@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\ChangeOrderController;
 use App\Http\Controllers\DiscussionController;
@@ -27,6 +28,10 @@ use Inertia\Inertia;
 Route::get('/', fn() => redirect()->route('dashboard'));
 
 Route::middleware(['auth', 'verified'])->group(function () {
+
+
+    Route::get('/change-password',  [ChangePasswordController::class, 'show'])->name('password.change');
+    Route::post('/change-password', [ChangePasswordController::class, 'update'])->name('password.change.update');
 
     Route::get('/activity', [App\Http\Controllers\ActivityController::class, 'index'])->name('activity.index');
 

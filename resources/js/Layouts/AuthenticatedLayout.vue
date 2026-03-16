@@ -64,7 +64,7 @@ watch(
         if (flash?.warning) toast.warning(flash.warning)
         if (flash?.info)    toast.info(flash.info)
     },
-    { deep: true }
+    { deep: true, immediate: true }
 )
 
 const sidebarCollapsed = ref(false)
