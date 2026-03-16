@@ -204,12 +204,8 @@ const submit = () => {
 
                 </form>
 
-                <!-- Register link -->
                 <p class="mt-8 text-center text-sm text-slate-500">
-                    Don't have an account?
-                    <Link :href="route('register')" class="text-indigo-400 hover:text-indigo-300 font-medium transition-colors ml-1">
-                        Request access
-                    </Link>
+                    Contact your administrator to get access.
                 </p>
 
             </div>
