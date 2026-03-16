@@ -10,6 +10,8 @@ use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
+use App\Notifications\WelcomeUser;
+use App\Notifications\RoleChanged;
 
 class UserController extends Controller
 {
@@ -50,7 +52,7 @@ class UserController extends Controller
         $user->syncRoles($validated['role']);
 
         if ($request->boolean('send_welcome')) {
-            event(new Registered($user));
+            $user->notify(new WelcomeUser($validated['password']));
         }
 
         return redirect()->back()->with('success', 'User created successfully.');
@@ -87,6 +89,7 @@ class UserController extends Controller
         ]);
 
         $user->syncRoles($validated['role']);
+        $user->notify(new RoleChanged($validated['role'], auth()->user()->name));
 
         return redirect()->back()->with('success', 'Role assigned successfully.');
     }
