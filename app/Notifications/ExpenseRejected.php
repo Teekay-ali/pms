@@ -7,6 +7,7 @@ use App\Models\Expense;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class ExpenseRejected extends Notification
 {
@@ -18,7 +19,7 @@ class ExpenseRejected extends Notification
 
     public function via($notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
     }
 
     public function toArray($notifiable): array
@@ -35,5 +36,18 @@ class ExpenseRejected extends Notification
                 'rejected_by' => $this->rejectedBy->name,
             ],
         ];
+    }
+
+    public function toMail($notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('Expense Rejected - ' . $this->expense->project->name)
+            ->greeting('Hello ' . $notifiable->name . ',')
+            ->line('Unfortunately your expense has been rejected.')
+            ->line('**Description:** ' . $this->expense->description)
+            ->line('**Project:** ' . $this->expense->project->name)
+            ->line('**Amount:** ₦' . number_format($this->expense->amount, 2))
+            ->action('View Expenses', url(route('expenses.index')))
+            ->salutation('- SitePro');
     }
 }

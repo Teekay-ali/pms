@@ -20,6 +20,7 @@ use App\Http\Controllers\Finance\FinanceDashboardController;
 use App\Http\Controllers\Finance\InvoiceController;
 use App\Http\Controllers\Finance\BillController;
 use App\Http\Controllers\Finance\PaymentController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -138,6 +139,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/leave/{leave}/approve', [LeaveController::class, 'approve'])->name('leave.approve');
         Route::post('/leave/{leave}/reject', [LeaveController::class, 'reject'])->name('leave.reject');
         Route::delete('/leave/{leave}', [LeaveController::class, 'destroy'])->name('leave.destroy');
+    });
+
+    // Reports
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+
+        Route::get('projects/excel',   [ReportController::class, 'exportProjectsExcel'])->name('projects.excel');
+        Route::get('projects/pdf',     [ReportController::class, 'exportProjectsPdf'])->name('projects.pdf');
+
+        Route::get('expenses/excel',   [ReportController::class, 'exportExpensesExcel'])->name('expenses.excel');
+        Route::get('expenses/pdf',     [ReportController::class, 'exportExpensesPdf'])->name('expenses.pdf');
+
+        Route::get('finance/excel',    [ReportController::class, 'exportFinanceExcel'])->name('finance.excel');
+        Route::get('finance/pdf',      [ReportController::class, 'exportFinancePdf'])->name('finance.pdf');
+
+        Route::get('resources/excel',  [ReportController::class, 'exportResourcesExcel'])->name('resources.excel');
+        Route::get('resources/pdf',    [ReportController::class, 'exportResourcesPdf'])->name('resources.pdf');
     });
 
 });

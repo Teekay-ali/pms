@@ -1,12 +1,12 @@
 <?php
 
-
 namespace App\Notifications;
 
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class ProjectStatusChanged extends Notification
 {
@@ -22,7 +22,7 @@ class ProjectStatusChanged extends Notification
 
     public function via($notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
     }
 
     public function toArray($notifiable): array
@@ -40,5 +40,18 @@ class ProjectStatusChanged extends Notification
                 'changed_by' => $this->changedBy->name,
             ],
         ];
+    }
+
+    public function toMail($notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('Project Status Updated - ' . $this->project->name)
+            ->greeting('Hello ' . $notifiable->name . ',')
+            ->line('A project status has been updated.')
+            ->line('**Project:** ' . $this->project->name)
+            ->line('**Previous Status:** ' . ucfirst($this->oldStatus))
+            ->line('**New Status:** ' . ucfirst($this->project->status))
+            ->action('View Project', url(route('projects.show', $this->project)))
+            ->salutation('- SitePro');
     }
 }

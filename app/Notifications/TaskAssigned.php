@@ -6,6 +6,7 @@ namespace App\Notifications;
 use App\Models\Task;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class TaskAssigned extends Notification
 {
@@ -17,7 +18,7 @@ class TaskAssigned extends Notification
 
     public function via($notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
     }
 
     public function toArray($notifiable): array
@@ -34,5 +35,18 @@ class TaskAssigned extends Notification
                 'priority' => $this->task->priority,
             ],
         ];
+    }
+
+    public function toMail($notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('New Task Assigned - ' . $this->task->name)
+            ->greeting('Hello ' . $notifiable->name . ',')
+            ->line('You have been assigned a new task.')
+            ->line('**Task:** ' . $this->task->name)
+            ->line('**Project:** ' . ($this->task->project?->name ?? '—'))
+            ->line('**Priority:** ' . ucfirst($this->task->priority))
+            ->action('View Tasks', url(route('tasks.index')))
+            ->salutation('- SitePro');
     }
 }

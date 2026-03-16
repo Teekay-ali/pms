@@ -6,7 +6,7 @@ import NotificationBell from '@/Components/NotificationBell.vue'
 import { useDarkMode } from '@/Composables/useDarkMode'
 import {
     Activity,
-    HardHat,
+    HardHat, BarChart3,
     DollarSign,
     LayoutDashboard, FileText, CreditCard,
     FolderKanban,
@@ -192,6 +192,7 @@ const navGroups = computed(() => [
         items: [
             { label: 'Users',        route: 'users.index',    icon: Users,    show: hasRole('admin') || hasRole('hr') },
             { label: 'Settings',     route: 'settings',       icon: Settings, show: true },
+            { label: 'Reports', route: 'reports.index', icon: BarChart3, show: can('reports.view') },
             { label: 'Activity Log', route: 'activity.index', icon: Activity, show: hasRole('admin') || hasRole('ceo') || hasRole('project_manager') },
         ],
     },

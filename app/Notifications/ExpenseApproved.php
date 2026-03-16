@@ -7,6 +7,7 @@ use App\Models\Expense;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class ExpenseApproved extends Notification
 {
@@ -18,7 +19,7 @@ class ExpenseApproved extends Notification
 
     public function via($notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
     }
 
     public function toArray($notifiable): array
@@ -36,4 +37,18 @@ class ExpenseApproved extends Notification
             ],
         ];
     }
+
+    public function toMail($notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('Expense Approved - ' . $this->expense->project->name)
+            ->greeting('Hello ' . $notifiable->name . ',')
+            ->line('Your expense has been approved.')
+            ->line('**Description:** ' . $this->expense->description)
+            ->line('**Project:** ' . $this->expense->project->name)
+            ->line('**Amount:** ₦' . number_format($this->expense->amount, 2))
+            ->action('View Expenses', url(route('expenses.index')))
+            ->salutation('- SitePro');
+    }
+
 }

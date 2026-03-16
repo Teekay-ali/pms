@@ -7,6 +7,7 @@ use App\Models\Expense;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class ExpenseSubmitted extends Notification
 {
@@ -18,7 +19,7 @@ class ExpenseSubmitted extends Notification
 
     public function via($notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
     }
 
     public function toArray($notifiable): array
@@ -35,5 +36,19 @@ class ExpenseSubmitted extends Notification
                 'submitted_by' => $this->submittedBy->name,
             ],
         ];
+    }
+
+    public function toMail($notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('Expense Pending Approval - ' . $this->expense->project->name)
+            ->greeting('Hello ' . $notifiable->name . ',')
+            ->line('A new expense has been submitted and requires your approval.')
+            ->line('**Description:** ' . $this->expense->description)
+            ->line('**Project:** ' . $this->expense->project->name)
+            ->line('**Amount:** ₦' . number_format($this->expense->amount, 2))
+            ->line('**Submitted by:** ' . $this->expense->creator?->name)
+            ->action('Review Expense', url(route('expenses.index')))
+            ->salutation('- SitePro');
     }
 }

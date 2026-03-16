@@ -461,7 +461,7 @@ const resourceTypeSuggestions = [
 
                     <!-- Unit cost -->
                     <div class="sm:col-span-2">
-                        <label :class="labelClass">Unit Cost (USD)</label>
+                        <label :class="labelClass">Unit Cost (NGN)</label>
                         <input
                             v-model="form.cost"
                             type="number"

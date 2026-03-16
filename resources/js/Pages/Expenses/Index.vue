@@ -407,7 +407,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                     </div>
 
                     <div>
-                        <label :class="labelClass">Amount (USD) <span class="text-rose-500">*</span></label>
+                        <label :class="labelClass">Amount (NGN) <span class="text-rose-500">*</span></label>
                         <input
                             v-model="form.amount"
                             type="number"
