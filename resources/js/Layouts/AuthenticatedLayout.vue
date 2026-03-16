@@ -175,14 +175,6 @@ const navGroups = computed(() => [
         ],
     },
     {
-        label: 'Administration',
-        items: [
-            { label: 'Users',        route: 'users.index',    icon: Users,    show: hasRole('admin') || hasRole('hr') },
-            { label: 'Settings',     route: 'settings',       icon: Settings, show: true },
-            { label: 'Activity Log', route: 'activity.index', icon: Activity, show: hasRole('admin') || hasRole('ceo') || hasRole('project_manager') },
-        ],
-    },
-    {
         label: 'Human Resources',
         items: [
             {
@@ -195,6 +187,15 @@ const navGroups = computed(() => [
             },
         ],
     },
+    {
+        label: 'Administration',
+        items: [
+            { label: 'Users',        route: 'users.index',    icon: Users,    show: hasRole('admin') || hasRole('hr') },
+            { label: 'Settings',     route: 'settings',       icon: Settings, show: true },
+            { label: 'Activity Log', route: 'activity.index', icon: Activity, show: hasRole('admin') || hasRole('ceo') || hasRole('project_manager') },
+        ],
+    },
+
 ])
 
 const visibleGroups = computed(() =>
