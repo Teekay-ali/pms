@@ -1,59 +1,160 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SitePro — Construction Project Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A modern, role-based construction project management platform built for residential and commercial teams. SitePro covers the full project lifecycle — from planning and budgeting to change orders, daily logs, and client visibility.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tech Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Layer | Technology |
+|---|---|
+| Backend | Laravel 12 |
+| Frontend | Vue 3 (Composition API + `<script setup>`) |
+| Bridge | Inertia.js 2 |
+| Styling | Tailwind CSS v4 |
+| Auth & RBAC | Laravel Breeze + Spatie Laravel Permission v7 |
+| Database | MySQL (via DBngin) |
+| Local Server | Laravel Herd |
+| Icons | Lucide Vue Next |
+| Notifications (UI) | Vue Sonner |
+| Activity Logging | Spatie Laravel Activitylog |
+| PDF Export | barryvdh/laravel-dompdf |
+| Excel Export | maatwebsite/excel |
+| Gantt Chart | @infectoone/vue-ganttastic |
+| Routing (JS) | Tightenco Ziggy |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Features
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Role-Based Access Control
+- **11 roles:** CEO, Admin, Project Manager, Site Engineer, Architect, Accountant, Finance, HR, Procurement, Supervisor, Site Worker
+- **34 granular permissions** across projects, tasks, expenses, resources, vendors, users, and system settings
+- Single role per user — enforced via `syncRoles`
+- Policy-level self-protection (users cannot delete or demote themselves)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Projects
+- Create, edit, and archive projects with budget, timeline, and status tracking
+- Project detail page with tabbed sections: Tasks, Expenses, Members, Resources
+- Real-time budget utilisation (approved expenses vs. project budget)
+- Budget alerts at 50%, 75%, and 100% thresholds
 
-## Laravel Sponsors
+### Tasks
+- Full CRUD with priority levels and status workflow
+- Overdue indicators and status filters
+- Assignee-based notifications on creation and status changes
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Expenses
+- Submit, approve, and reject expenses with audit trail
+- Inline approve/reject for authorised roles
+- Filters: project, status, search
+- Summary cards for quick financial overview
 
-### Premium Partners
+### Change Orders
+- Formal scope/budget change workflow: Draft → Submitted → Approved/Rejected
+- Approved change orders automatically update the project budget
+- Cost impact (positive/negative) and timeline impact (days)
+- Rejection reason captured on decline
+- Filterable by project and status
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Resources
+- Track equipment, materials, and labour allocations per project
+- Live value preview in create/edit modal
+- Dynamic type filtering
 
-## Contributing
+### Vendors
+- Contact directory with type-based filtering
+- Direct mailto/tel links from the table
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Users & Admin
+- Three-modal design: Create, Edit, Assign Role
+- Optional welcome email on user creation
+- Admin cannot modify their own role or delete their own account
 
-## Code of Conduct
+### Notifications
+- Database-backed notifications via Laravel's built-in system
+- Bell dropdown in the navbar + dedicated `/notifications` page
+- Triggered by: expense submitted, expense approved/rejected, task assigned, task status changed, project status changed, task overdue
+- Read/unread state with mark-all-read action
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Activity Log
+- Powered by Spatie Laravel Activitylog
+- Tracks all meaningful model changes across the application
 
-## Security Vulnerabilities
+### Gantt Chart
+- Visual project timeline via `@infectoone/vue-ganttastic`
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Reports & Export
+- PDF export via Laravel DomPDF
+- Excel/CSV export via Maatwebsite Excel
+
+### Dashboard
+- Live stat cards from real database queries
+- Recent projects, upcoming tasks, and quick-action shortcuts
+
+---
+
+## UI & Design
+
+- Dark sidebar layout (slate-900) with indigo accents
+- Neutral grays throughout — color reserved for semantic status indicators only
+- Modal-based CRUD across all modules (no separate create/edit pages)
+- Responsive design with mobile drawer navigation
+- Dark mode toggle via `useDarkMode.js` composable
+- Flash toasts via Vue Sonner in `AppLayout.vue`
+
+---
+
+## Database Seeding
+
+Run `php artisan db:seed` to populate:
+- All 11 roles and 34 permissions
+- Sample users across every role
+- 7 projects with realistic statuses and budgets
+- 37+ tasks with varied priorities and assignees
+- Expenses, resources, vendors, and change orders
+
+---
+
+## Local Development
+
+**Requirements:** PHP 8.2+, Node.js 20+, MySQL, [Laravel Herd](https://herd.laravel.com), [DBngin](https://dbngin.com)
+
+```bash
+git clone <repo-url> sitepro
+cd sitepro
+
+composer install
+npm install
+
+cp .env.example .env
+php artisan key:generate
+
+# Configure DB credentials in .env, then:
+php artisan migrate --seed
+
+npm run dev
+```
+
+Or use the composer shortcut which does everything in one step:
+
+```bash
+composer run setup
+```
+
+Access the app at `http://sitepro.test` (Herd).
+
+---
+
+## Roadmap
+
+- [ ] Daily Log — site activity logging per project/day
+- [ ] Punch List — pre-handover checklist per project
+- [ ] Client Portal — read-only project view for homeowners/clients
+- [ ] Time Tracking — log hours per task and user
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Private. Built for client use. Not open source.

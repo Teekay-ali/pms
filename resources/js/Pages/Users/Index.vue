@@ -484,7 +484,7 @@ const errorMsgClass = 'mt-1.5 text-xs text-rose-500'
                     />
                     <div>
                         <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Send welcome / verification email</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Sends a Laravel email verification link to the user's inbox.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Sends an email verification link to the user's inbox.</p>
                     </div>
                 </label>
 
