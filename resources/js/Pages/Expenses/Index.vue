@@ -77,7 +77,7 @@ const totals = computed(() => ({
 }))
 
 // ── Helpers ────────────────────────────────────────────
-const fmtMoney = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(v)
+const fmtMoney = (v) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(v)
 const fmtDate  = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
 const initials = (name) => name?.split(' ').map(n => n[0]).slice(0, 2).join('') ?? '?'
 

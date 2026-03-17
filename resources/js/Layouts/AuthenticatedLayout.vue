@@ -539,17 +539,12 @@ const logout = () => {
                     <div class="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
                     <!-- User -->
-                    <div class="flex items-center gap-2.5">
-                        <div class="hidden sm:block text-right">
-                            <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 leading-none mb-0.5">{{ user?.name }}</p>
-                            <p class="text-xs text-slate-400">{{ primaryRole }}</p>
-                        </div>
-                        <div class="w-8 h-8 bg-linear-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm cursor-pointer">
-                            {{ userInitials }}
-                        </div>
+                    <!-- User avatar -->
+                    <div class="w-8 h-8 bg-linear-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm cursor-pointer">
+                        {{ userInitials }}
                     </div>
                 </div>
-            </header>
+        </header>
 
             <!-- Page content -->
             <main class="flex-1 p-4 lg:p-6 overflow-x-hidden overflow-y-auto min-w-0">

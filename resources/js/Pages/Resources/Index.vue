@@ -80,7 +80,7 @@ const totals = computed(() => ({
 }))
 
 // ── Helpers ────────────────────────────────────────────
-const fmtMoney = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(v)
+const fmtMoney = (v) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(v)
 const fmtQty   = (q, u) => `${parseFloat(q).toLocaleString()}${u ? ' ' + u : ''}`
 
 // ── CRUD ───────────────────────────────────────────────

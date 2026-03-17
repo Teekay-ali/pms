@@ -84,8 +84,11 @@ const formatDate = (d) => d
     ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     : '—'
 
-const isOverdue = (d, status) =>
-    d && status !== 'completed' && new Date(d) < new Date()
+const isOverdue = (d, status) => {
+    if (!d || status === 'completed') return false
+    const today = new Date().toISOString().substring(0, 10)
+    return d < today
+}
 
 const initials = (name) => name?.split(' ').map(n => n[0]).slice(0, 2).join('') ?? '?'
 

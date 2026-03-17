@@ -144,7 +144,8 @@ const submitEdit = () => {
 
 // ── Delete ─────────────────────────────────────────────
 const deleteProject = (id) => {
-    if (confirm('Are you sure you want to delete this project?')) {
+    if (confirm(`Delete "${project.name}"? This will also remove all tasks, expenses and resources attached to it.`))
+    {
         router.delete(route('projects.destroy', id))
     }
 }
